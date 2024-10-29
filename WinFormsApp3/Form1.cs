@@ -103,23 +103,30 @@ namespace WinFormsApp3
 
         private void LoadDepartments()
         {
+
             string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;Pwd=;";
+            string query = "SELECT DepartmentName FROM hospitaldepartments"; // Correctly targeting the DepartmentName column
 
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT DepartmentName FROM hospitaldepartments";  // Assuming 'Departments' is the table name
-
                     using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {
                         using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
+                            listBox1.Items.Clear(); // Clear the existing items in the listbox to avoid duplicates
+
                             while (reader.Read())
                             {
+                                // Fetch the DepartmentName value from the reader
                                 string departmentName = reader["DepartmentName"]?.ToString() ?? string.Empty;
-                                lstDepartments.Items.Add(departmentName);
+
+                                if (!string.IsNullOrEmpty(departmentName)) // Only add non-empty department names
+                                {
+                                    listBox1.Items.Add(departmentName);
+                                }
                             }
                         }
                     }
@@ -130,6 +137,8 @@ namespace WinFormsApp3
                 MessageBox.Show("An error occurred while loading departments: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
 
 
         private void LoadGroups()
@@ -147,15 +156,29 @@ namespace WinFormsApp3
                     {
                         using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            checkedListBox1.Items.Clear();  // Clear the CheckedListBox before adding new items
+                            // Assuming that groupbox2, groupbox3, and groupbox4 are textboxes for displaying the number of groups
+                            groupbox2.Clear();
+                            groupbox3.Clear();
+                            groupbox4.Clear();
 
+                            int groupCount = 0;
                             while (reader.Read())
                             {
                                 string groupNumber = reader["GroupNumber"]?.ToString() ?? string.Empty;
 
                                 if (!string.IsNullOrEmpty(groupNumber))
                                 {
-                                    checkedListBox1.Items.Add(groupNumber);
+                                    // Dynamically set the values in the textboxes based on the retrieved group numbers
+                                    // This is a placeholder logic, depending on your exact requirements
+                                    // Here, we assume you want to distribute groups evenly across textboxes
+                                    if (groupCount % 3 == 0)
+                                        groupbox2.AppendText(groupNumber + Environment.NewLine);
+                                    else if (groupCount % 3 == 1)
+                                        groupbox3.AppendText(groupNumber + Environment.NewLine);
+                                    else
+                                        groupbox4.AppendText(groupNumber + Environment.NewLine);
+
+                                    groupCount++;
                                 }
                             }
                         }
@@ -167,6 +190,7 @@ namespace WinFormsApp3
                 MessageBox.Show("An error occurred while loading groups: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         private void LoadTimeShifts()
         {
@@ -409,7 +433,7 @@ namespace WinFormsApp3
         private void button2_Click(object sender, EventArgs e)
         {
             // Path for the existing Excel file
-            string filePath = Path.Combine(@"C:\excellsheetRotationSchedule.xlsx");
+            string filePath = Path.Combine(@"C:\excellsheet\RotationSchedule.xlsx");
 
             try
             {
@@ -437,7 +461,7 @@ namespace WinFormsApp3
             try
             {
                 // Path for the existing Excel file
-                string filePath = Path.Combine(@"C:\excellsheetRotationSchedule.xlsx");
+                string filePath = @"C:\excellsheet\RotationSchedule.xlsx";
 
                 // Check if the file exists
                 if (File.Exists(filePath))
@@ -446,7 +470,7 @@ namespace WinFormsApp3
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
                     {
                         FileName = filePath,
-                        UseShellExecute = true  // This ensures it opens with the default program
+                        UseShellExecute = true // This ensures it opens with the default program
                     });
                 }
                 else
@@ -458,6 +482,7 @@ namespace WinFormsApp3
             {
                 MessageBox.Show($"An error occurred while trying to open the file: {ex.Message}");
             }
+
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -482,26 +507,87 @@ namespace WinFormsApp3
 
         private void button5_Click(object sender, EventArgs e)
         {
+           // nothing here it is already changed 
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            // nothing to follow it is already changed 
+        }
+
+        private void lstYearLevels_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
             // Path for saving the Excel file
-            string filePath = Path.Combine(@"C:\excellsheet", "RotationSchedule.xlsx");
+            // keep button for the deployment of C.I 
+            string filePath = Path.Combine(@"C:\excellsheet\", "RotationSchedule.xlsx");
 
             using (var workbook = File.Exists(filePath) ? new XLWorkbook(filePath) : new XLWorkbook()) // Open existing workbook or create new one
             {
-                // Check if the worksheet exists, otherwise add a new one
                 var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Rotation Schedule")
                                 ?? workbook.Worksheets.Add("Rotation Schedule");
 
                 try
                 {
-                    // Retrieve selected areas from lstDepartments, trimming spaces
-                    var selectedAreas = lstDepartments.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
+                    // Define a structure to track each Clinical Instructor's information
+                    var clinicalInstructorsInfo = new Dictionary<string, (XLColor Color, int LastWeek)>();
+
+                    // Retrieve the selected Clinical Instructor
+                    string selectedCI = lstClinicalInstructors.SelectedItem?.ToString()?.Trim() ?? "Unknown";
+
+                    if (string.IsNullOrEmpty(selectedCI))
+                    {
+                        MessageBox.Show("No Clinical Instructor selected.");
+                        return;
+                    }
+
+                    // Retrieve the C.I.'s colors from the database (background and text color)
+                    var (backgroundColor, textColor) = GetInstructorColorsFromDatabase(selectedCI);
+
+                    // Check if we already have information for this C.I.
+                    if (!clinicalInstructorsInfo.ContainsKey(selectedCI))
+                    {
+                        clinicalInstructorsInfo[selectedCI] = (backgroundColor, 0); // Initialize the C.I.'s info with week 0
+                    }
+
+                    // Retrieve the number of groups from the textboxes
+                    int groupsIn2ndYear = int.TryParse(groupbox2.Text, out int g2) ? g2 : 0;
+                    int groupsIn3rdYear = int.TryParse(groupbox3.Text, out int g3) ? g3 : 0;
+                    int groupsIn4thYear = int.TryParse(groupbox4.Text, out int g4) ? g4 : 0;
+
+                    // Combine all groups into a single list
+                    List<int> allGroups = new List<int>();
+                    for (int i = 1; i <= groupsIn2ndYear; i++) allGroups.Add(i); // Add groups from 2nd year
+                    for (int i = 1; i <= groupsIn3rdYear; i++) allGroups.Add(i + 100); // Add groups from 3rd year (100 series)
+                    for (int i = 1; i <= groupsIn4thYear; i++) allGroups.Add(i + 200); // Add groups from 4th year (200 series)
+
+                    // Retrieve the selected areas from listbox1
+                    var selectedAreas = listBox1.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
                     if (selectedAreas.Length == 0)
                     {
                         MessageBox.Show("No areas selected.");
                         return;
                     }
 
-                    // Retrieve selected year levels from lstYearLevels, trimming spaces and converting to lowercase
+                    // Define starting rows for year levels
+                    Dictionary<string, int> yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
+            { "2nd year", 6 },  // Start row for 2nd Year
+            { "3rd year", 22 },  // Start row for 3rd Year
+            { "4th year", 38 }   // Start row for 4th Year
+        };
+
+                    // Define the base columns for each timeshift
+                    Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
+            { "7am to 3pm", 2 },   // Base column for 7am to 3pm
+            { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
+            { "11pm to 7am", 4 }   // Base column for 11pm to 7am
+        };
+
+                    // Retrieve the selected year levels
                     var selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().Select(s => s.Trim().ToLowerInvariant()).ToArray();
                     if (selectedYearLevels.Length == 0)
                     {
@@ -509,167 +595,154 @@ namespace WinFormsApp3
                         return;
                     }
 
-                    // Retrieve selected timeshift from lstTimeShifts (assuming only one timeshift selected)
-                    var selectedTimeshift = lstTimeShifts.SelectedItem?.ToString()?.Trim().ToLowerInvariant();
-                    if (string.IsNullOrEmpty(selectedTimeshift))
+                    // Retrieve selected timeshifts
+                    var selectedTimeshifts = lstTimeShifts.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
+                    if (selectedTimeshifts.Length == 0)
                     {
-                        MessageBox.Show("No timeshift selected.");
+                        MessageBox.Show("No timeshifts selected.");
                         return;
                     }
 
-                    // Get the number of weeks from user input (assuming it's input via a TextBox or another control)
-                    if (!int.TryParse(txtNumberOfWeeks.Text, out int numberOfWeeks) || numberOfWeeks <= 0)
+                    // Get the number of rotations dynamically
+                    int numberOfRotations;
+                    if (!int.TryParse(textBox1.Text, out numberOfRotations) || numberOfRotations <= 0)
                     {
-                        MessageBox.Show("Invalid number of weeks.");
+                        MessageBox.Show("Invalid number of rotations.");
                         return;
                     }
 
-                    // Define starting rows for year levels
-                    Dictionary<string, int> yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "2nd year", 6 },  // Start row for 2nd Year
-            { "3rd year", 22 },  // Start row for 3rd Year
-            { "4th year", 38 }  // Start row for 4th Year
-        };
+                    // Retrieve weeks to exclude from the week excluder checklistbox
+                    var excludedWeeks = checklistboxExclude.CheckedItems.Cast<string>().Select(int.Parse).ToHashSet();
 
-                    // Define the base columns for each timeshift
-                    Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "7am to 3pm", 2 },   // Base column for 7am to 3pm
-            { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
-            { "11pm to 7am", 4 }   // Base column for 11pm to 7am
-        };
+                    // Initialize random number generator
+                    Random random = new Random();
 
-                    if (!baseTimeshiftColumns.ContainsKey(selectedTimeshift))
+                    // Function to find the last week for the specific Clinical Instructor (based on color coding)
+                    int GetLastWeekForCIBasedOnColor(XLColor ciColor)
                     {
-                        MessageBox.Show($"Timeshift '{selectedTimeshift}' is not defined.");
-                        return;
-                    }
+                        int lastWeek = 0;
 
-                    // Get the checked groups from CheckedListBox and trim spaces
-                    var selectedGroups = checkedListBox1.CheckedItems.Cast<string>().Select(g => g.Trim()).ToArray();
-                    if (selectedGroups.Length == 0)
-                    {
-                        MessageBox.Show("No groups selected.");
-                        return;
-                    }
-
-                    // Function to read the number of available groups from Excel
-                    int GetAvailableGroups(int startRow, IXLWorksheet worksheet)
-                    {
-                        int availableGroups = 0;
-                        int currentRow = startRow;
-
-                        // Check column 1 (or a relevant column) for non-empty cells
-                        while (!string.IsNullOrWhiteSpace(worksheet.Cell(currentRow, 1).GetString()))
+                        // Loop through each timeshift
+                        foreach (var timeshift in baseTimeshiftColumns.Keys)
                         {
-                            availableGroups++;
-                            currentRow++;
-                        }
+                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
 
-                        return availableGroups;
-                    }
-
-                    // Validate if selected groups exist for the selected year levels
-                    foreach (var yearLevel in selectedYearLevels)
-                    {
-                        if (!yearLevelStartRows.ContainsKey(yearLevel))
-                        {
-                            MessageBox.Show($"Year level '{yearLevel}' is not defined.");
-                            return;
-                        }
-
-                        int startingRow = yearLevelStartRows[yearLevel];
-
-                        // Get available groups dynamically from Excel
-                        int availableGroups = GetAvailableGroups(startingRow, worksheet);
-
-                        foreach (var group in selectedGroups)
-                        {
-                            int groupNumber;
-                            if (!int.TryParse(group, out groupNumber) || groupNumber > availableGroups)
+                            // Loop through each year level to find the last week where a C.I. rotation exists based on color
+                            foreach (var yearLevel in yearLevelStartRows.Keys)
                             {
-                                MessageBox.Show($"Group {groupNumber} does not exist in {yearLevel}. Maximum groups: {availableGroups}.");
-                                return;
+                                int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+
+                                // Loop through the weeks to find the last filled week for the C.I.
+                                for (int week = 0; week < 50; week++) // Assuming 50 as the maximum number of weeks
+                                {
+                                    int weekOffset = week * 3; // Each week starts 3 columns later
+                                    int targetColumn = timeshiftColumn + weekOffset;
+
+                                    bool isWeekFilledForCI = false;
+
+                                    // Check each group for that week and timeshift
+                                    for (int groupNumber = 1; groupNumber <= 10; groupNumber++) // Assuming 10 groups
+                                    {
+                                        int targetRow = startingRowForYearLevel + groupNumber - 1;
+
+                                        // Check if the current cell matches the C.I.'s color
+                                        if (worksheet.Cell(targetRow, targetColumn).Style.Fill.BackgroundColor == ciColor)
+                                        {
+                                            isWeekFilledForCI = true;
+                                            break;
+                                        }
+                                    }
+
+                                    // If this week was filled for the CI, update the last filled week
+                                    if (isWeekFilledForCI)
+                                    {
+                                        lastWeek = Math.Max(lastWeek, week + 1);
+                                    }
+                                }
                             }
                         }
+
+                        return lastWeek;
                     }
 
-                    // Find the next available week for the selected timeshift
-                    int week = 0;
-                    int timeshiftColumn = baseTimeshiftColumns[selectedTimeshift];
-
-                    // Iterate through the weeks to find the first unfilled week
-                    while (true)
+                    // Get the last week for the selected C.I. using its color from the database
+                    int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor);
+                    // Insert the rotations starting from the last known week for the current C.I.
+                    foreach (var timeshift in selectedTimeshifts)
                     {
-                        int weekOffset = week * 3; // Each week starts 3 columns later (since there are 3 timeshifts per week)
-                        int targetColumn = timeshiftColumn + weekOffset;
+                        // Copy the list of all available groups
+                        List<int> groupsForRotationCycle = new List<int>(allGroups);
 
-                        bool isWeekFilled = false;
-                        foreach (var yearLevel in selectedYearLevels)
+                        // Ensure the number of groups does not exceed the number of rotations
+                        if (groupsForRotationCycle.Count > numberOfRotations)
                         {
-                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
-                            bool isYearLevelFilled = false;
+                            // Shuffle and take only the first 'numberOfRotations' groups
+                            groupsForRotationCycle = groupsForRotationCycle.OrderBy(g => random.Next()).Take(numberOfRotations).ToList();
+                        }
 
-                            // Check if any group in the current week and timeshift is already filled
-                            foreach (var group in selectedGroups) // Iterate only through the checked groups
+                        // Start from the next week after the last filled week
+                        int startingWeek = lastWeekForCI + 1;
+
+                        for (int rotation = 0; rotation < numberOfRotations; rotation++)
+                        {
+                            int week = startingWeek + rotation;
+
+                            // Skip the weeks that are marked as excluded
+                            if (excludedWeeks.Contains(week))
                             {
-                                int targetRow = startingRowForYearLevel + int.Parse(group) - 1; // Adjust for group number
-                                if (!string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, targetColumn).GetString()))
+                                continue;
+                            }
+
+                            if (groupsForRotationCycle.Count == 0)
+                            {
+                                // If no groups are left in this cycle, reset the groups for the next rotation cycle
+                                groupsForRotationCycle = new List<int>(allGroups);
+                                if (groupsForRotationCycle.Count > numberOfRotations)
                                 {
-                                    isYearLevelFilled = true;
-                                    break; // If any group is filled, the week is considered filled for this year level
+                                    // Shuffle and take only the first 'numberOfRotations' groups
+                                    groupsForRotationCycle = groupsForRotationCycle.OrderBy(g => random.Next()).Take(numberOfRotations).ToList();
                                 }
                             }
 
-                            if (isYearLevelFilled)
+                            int weekOffset = (week - 1) * 3;
+                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
+                            int targetColumn = timeshiftColumn + weekOffset;
+
+                            foreach (var yearLevel in selectedYearLevels)
                             {
-                                isWeekFilled = true;
-                                break; // If the week is filled for any year level, move to the next week
-                            }
-                        }
+                                int startingRowForYearLevel = yearLevelStartRows[yearLevel];
 
-                        if (!isWeekFilled)
-                        {
-                            break; // If the week is not filled for any year level, stop searching and start filling this week
-                        }
+                                // Randomly select one group to assign for the week
+                                int randomGroupIndex = random.Next(groupsForRotationCycle.Count);
+                                int groupToAssign = groupsForRotationCycle[randomGroupIndex];
+                                groupsForRotationCycle.RemoveAt(randomGroupIndex); // Remove selected group from the cycle
 
-                        week++; // Move to the next week
-                    }
+                                int actualGroupNumber;
+                                if (groupToAssign > 200) actualGroupNumber = groupToAssign - 200;
+                                else if (groupToAssign > 100) actualGroupNumber = groupToAssign - 100;
+                                else actualGroupNumber = groupToAssign;
 
-                    // Now insert the areas starting from the first available week
-                    for (int w = 0; w < numberOfWeeks; w++)
-                    {
-                        int weekOffset = (week + w) * 3; // Calculate the offset for each week dynamically
-                        int targetColumn = timeshiftColumn + weekOffset;
+                                int targetRow = startingRowForYearLevel + actualGroupNumber - 1;
 
-                        // Insert areas for each selected year level and groups
-                        foreach (var yearLevel in selectedYearLevels)
-                        {
-                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
-                            int areaIndex = 0; // Track the current area being placed
-
-                            // Insert areas only for the selected groups
-                            foreach (var group in selectedGroups)
-                            {
-                                if (areaIndex >= selectedAreas.Length) // If we run out of areas, reset the index to start over
+                                if (string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, targetColumn).GetString()))
                                 {
-                                    areaIndex = 0;
+                                    int randomAreaIndex = random.Next(selectedAreas.Length);
+                                    string areaToAssign = selectedAreas[randomAreaIndex];
+
+                                    worksheet.Cell(targetRow, targetColumn).Value = areaToAssign;
+                                    worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                                    worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor);
                                 }
-
-                                int targetRow = startingRowForYearLevel + int.Parse(group) - 1; // Adjust row based on group number
-
-                                // Place the area in the timeshift column for the current group
-                                worksheet.Cell(targetRow, targetColumn).Value = selectedAreas[areaIndex];
-                                worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-                                worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(XLColor.White); // Optional: Adjust color
-
-                                areaIndex++; // Move to the next area
+                                else
+                                {
+                                    MessageBox.Show($"Conflict detected in year level {yearLevel}, group {actualGroupNumber}, timeshift {timeshift}, week {week + 1}.");
+                                }
                             }
                         }
                     }
 
-                    // Save the Excel file
+
+                    // Save the workbook
                     workbook.SaveAs(filePath);
                     MessageBox.Show($"Excel file updated successfully at {filePath}");
                 }
@@ -678,11 +751,125 @@ namespace WinFormsApp3
                     MessageBox.Show($"An error occurred: {ex.Message}");
                 }
             }
+
+
+
+            // Function to retrieve background and text color from the database
+            (XLColor backgroundColor, XLColor textColor) GetInstructorColorsFromDatabase(string instructorName)
+            {
+                string backgroundColorName = "";
+                string textColorName = "";
+
+                // SQL connection and query to retrieve the background and text colors
+                string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;"; // Replace with your actual connection string
+                string query = "SELECT backgroundColor, textColor FROM ClinicalInstructors WHERE InstructorName = @InstructorName";
+
+                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                {
+                    conn.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@instructorName", instructorName);
+
+                        // Execute the query and retrieve the colors
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                backgroundColorName = reader["backgroundColor"]?.ToString() ?? "NoColor"; // Use default "NoColor"
+                                textColorName = reader["textColor"]?.ToString() ?? "Black"; // Default to "Black"
+                            }
+                            else
+                            {
+                                MessageBox.Show($"No colors found for the Clinical Instructor: {instructorName}");
+                                return (XLColor.NoColor, XLColor.Black); // Default to no color and black text if not found
+                            }
+                        }
+                    }
+                }
+                // line 948 to line 1056 is to be fixed later 
+
+                // Map the color names to XLColor for ClosedXML
+                XLColor backgroundColor = MapColorNameToXLColor(backgroundColorName);
+                XLColor textColor = MapColorNameToXLColor(textColorName);
+
+                return (backgroundColor, textColor);
+            }
+
+            // Helper function to map color names from the database to XLColor
+            XLColor MapColorNameToXLColor(string colorName)
+            {
+                switch (colorName?.ToLower()) // Ensure colorName is not null
+                {
+                    case "red":
+                        return XLColor.Red;
+                    case "blue":
+                        return XLColor.Blue;
+                    case "green":
+                        return XLColor.Green;
+                    case "yellow":
+                        return XLColor.Yellow;
+                    case "pink":
+                        return XLColor.Pink;
+                    case "brown":
+                        return XLColor.Brown;
+                    case "gray":
+                        return XLColor.Gray;
+                    case "orange":
+                        return XLColor.Orange;
+                    case "violet":
+                        return XLColor.Violet;
+                    // Add more colors as needed
+                    default:
+                        return XLColor.NoColor; // Default to no color if not recognized
+                }
+            }
         }
 
-        private void button6_Click(object sender, EventArgs e)
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lstTimeShifts_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel3_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void lstClinicalInstructors_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label13_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label12_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button7_Click_1(object sender, EventArgs e)
         {
             // Path for saving the Excel file
+            // new button for the clearing of areas 
             string filePath = Path.Combine(@"C:\excellsheet", "RotationSchedule.xlsx");
 
             using (var workbook = File.Exists(filePath) ? new XLWorkbook(filePath) : new XLWorkbook()) // Open existing workbook or create new one
@@ -815,56 +1002,23 @@ namespace WinFormsApp3
                     MessageBox.Show($"An error occurred while clearing areas: {ex.Message}");
                 }
             }
-
         }
 
-        private void lstYearLevels_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button7_Click(object sender, EventArgs e)
+        private void button8_Click(object sender, EventArgs e)
         {
             // Path for saving the Excel file
-            string filePath = Path.Combine(@"C:\excellsheet\", "RotationSchedule.xlsx");
+            // new button for the area putting
+            string filePath = Path.Combine(@"C:\excellsheet", "RotationSchedule.xlsx");
 
             using (var workbook = File.Exists(filePath) ? new XLWorkbook(filePath) : new XLWorkbook()) // Open existing workbook or create new one
             {
+                // Check if the worksheet exists, otherwise add a new one
                 var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Rotation Schedule")
                                 ?? workbook.Worksheets.Add("Rotation Schedule");
 
                 try
                 {
-                    // Define a structure to track each Clinical Instructor's information
-                    var clinicalInstructorsInfo = new Dictionary<string, (XLColor Color, int LastWeek)>();
-
-                    // Retrieve the selected Clinical Instructor
-                    string selectedCI = lstClinicalInstructors.SelectedItem?.ToString()?.Trim() ?? "Unknown";
-
-                    if (string.IsNullOrEmpty(selectedCI))
-                    {
-                        MessageBox.Show("No Clinical Instructor selected.");
-                        return;
-                    }
-
-                    // Retrieve the C.I.'s colors from the database (background and text color)
-                    var (backgroundColor, textColor) = GetInstructorColorsFromDatabase(selectedCI);
-
-                    // Check if we already have information for this C.I.
-                    if (!clinicalInstructorsInfo.ContainsKey(selectedCI))
-                    {
-                        clinicalInstructorsInfo[selectedCI] = (backgroundColor, 0); // Initialize the C.I.'s info with week 0
-                    }
-
-                    // Retrieve the selected groups
-                    var selectedGroups = checkedListBox1.CheckedItems.Cast<string>().Select(g => g.Trim()).ToList();
-                    if (selectedGroups.Count == 0)
-                    {
-                        MessageBox.Show("No groups selected.");
-                        return;
-                    }
-
-                    // Retrieve the selected areas (departments)
+                    // Retrieve selected areas from lstDepartments, trimming spaces
                     var selectedAreas = lstDepartments.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
                     if (selectedAreas.Length == 0)
                     {
@@ -872,21 +1026,7 @@ namespace WinFormsApp3
                         return;
                     }
 
-                    // Define starting rows for year levels
-                    Dictionary<string, int> yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
-            { "2nd year", 6 },  // Start row for 2nd Year
-            { "3rd year", 22 },  // Start row for 3rd Year
-            { "4th year", 38 }   // Start row for 4th Year
-        };
-
-                    // Define the base columns for each timeshift
-                    Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
-            { "7am to 3pm", 2 },   // Base column for 7am to 3pm
-            { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
-            { "11pm to 7am", 4 }   // Base column for 11pm to 7am
-        };
-
-                    // Retrieve the selected year levels
+                    // Retrieve selected year levels from lstYearLevels, trimming spaces and converting to lowercase
                     var selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().Select(s => s.Trim().ToLowerInvariant()).ToArray();
                     if (selectedYearLevels.Length == 0)
                     {
@@ -894,127 +1034,168 @@ namespace WinFormsApp3
                         return;
                     }
 
-                    // Retrieve selected timeshifts
-                    var selectedTimeshifts = lstTimeShifts.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
-                    if (selectedTimeshifts.Length == 0)
+                    // Retrieve selected timeshift from lstTimeShifts (assuming only one timeshift selected)
+                    var selectedTimeshift = lstTimeShifts.SelectedItem?.ToString()?.Trim().ToLowerInvariant();
+                    if (string.IsNullOrEmpty(selectedTimeshift))
                     {
-                        MessageBox.Show("No timeshifts selected.");
+                        MessageBox.Show("No timeshift selected.");
                         return;
                     }
 
-                    // Initialize random number generator
-                    Random random = new Random();
-
-                    // Function to find the last week for the specific Clinical Instructor (based on color coding)
-                    int GetLastWeekForCIBasedOnColor(XLColor ciColor)
+                    // Get the number of weeks from user input (assuming it's input via a TextBox or another control)
+                    if (!int.TryParse(txtNumberOfWeeks.Text, out int numberOfWeeks) || numberOfWeeks <= 0)
                     {
-                        int lastWeek = 0;
-
-                        // Loop through each timeshift
-                        foreach (var timeshift in baseTimeshiftColumns.Keys)
-                        {
-                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
-
-                            // Loop through each year level to find the last week where a C.I. rotation exists based on color
-                            foreach (var yearLevel in yearLevelStartRows.Keys)
-                            {
-                                int startingRowForYearLevel = yearLevelStartRows[yearLevel];
-
-                                // Loop through the weeks to find the last filled week for the C.I.
-                                for (int week = 0; week < 50; week++) // Assuming 50 as the maximum number of weeks
-                                {
-                                    int weekOffset = week * 3; // Each week starts 3 columns later
-                                    int targetColumn = timeshiftColumn + weekOffset;
-
-                                    bool isWeekFilledForCI = false;
-
-                                    // Check each group for that week and timeshift
-                                    for (int groupNumber = 1; groupNumber <= 10; groupNumber++) // Assuming 10 groups
-                                    {
-                                        int targetRow = startingRowForYearLevel + groupNumber - 1;
-
-                                        // Check if the current cell matches the C.I.'s color
-                                        if (worksheet.Cell(targetRow, targetColumn).Style.Fill.BackgroundColor == ciColor)
-                                        {
-                                            isWeekFilledForCI = true;
-                                            break;
-                                        }
-                                    }
-
-                                    // If this week was filled for the CI, update the last filled week
-                                    if (isWeekFilledForCI)
-                                    {
-                                        lastWeek = Math.Max(lastWeek, week + 1);
-                                    }
-                                }
-                            }
-                        }
-
-                        return lastWeek;
+                        MessageBox.Show("Invalid number of weeks.");
+                        return;
                     }
 
+                    // Define starting rows for year levels
+                    Dictionary<string, int> yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "2nd year", 6 },  // Start row for 2nd Year
+            { "3rd year", 22 },  // Start row for 3rd Year
+            { "4th year", 38 }  // Start row for 4th Year
+        };
 
-                    // Get the last week for the selected C.I. using its color from the database
-                    int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor);
+                    // Define the base columns for each timeshift
+                    Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "7am to 3pm", 2 },   // Base column for 7am to 3pm
+            { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
+            { "11pm to 7am", 4 }   // Base column for 11pm to 7am
+        };
 
-                    // Insert the rotations starting from the last known week for the current C.I.
-                    foreach (var timeshift in selectedTimeshifts)
+                    if (!baseTimeshiftColumns.ContainsKey(selectedTimeshift))
                     {
-                        // Make a copy of the selectedGroups list so we can remove groups after they're assigned
-                        List<string> availableGroups = new List<string>(selectedGroups);
-                        string? lastAssignedGroup = null;
+                        MessageBox.Show($"Timeshift '{selectedTimeshift}' is not defined.");
+                        return;
+                    }
 
-                        // Start from the next week after the last filled week
-                        int startingWeek = lastWeekForCI + 1;
+                    // Read the number of groups from the textboxes in groupbox2, groupbox3, and groupbox4
+                    int[] numberOfGroups = new int[3]; // Array to store the number of groups for each year level
 
-                        for (int week = startingWeek; week < startingWeek + selectedGroups.Count; week++)
+                    bool validInput = int.TryParse(groupbox2.Text, out numberOfGroups[0]) &&
+                                      int.TryParse(groupbox3.Text, out numberOfGroups[1]) &&
+                                      int.TryParse(groupbox4.Text, out numberOfGroups[2]);
+
+                    if (!validInput || numberOfGroups.Any(g => g <= 0))
+                    {
+                        MessageBox.Show("Invalid number of groups.");
+                        return;
+                    }
+
+                    // Function to read the number of available groups from Excel
+                    int GetAvailableGroups(int startRow, IXLWorksheet worksheet)
+                    {
+                        int availableGroups = 0;
+                        int currentRow = startRow;
+
+                        // Check column 1 (or a relevant column) for non-empty cells
+                        while (!string.IsNullOrWhiteSpace(worksheet.Cell(currentRow, 1).GetString()))
                         {
-                            if (availableGroups.Count == 0)
-                            {
-                                MessageBox.Show("All groups have been assigned.");
-                                availableGroups = new List<string>(selectedGroups);
-                            }
+                            availableGroups++;
+                            currentRow++;
+                        }
 
-                            int weekOffset = (week - 1) * 3;
-                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
-                            int targetColumn = timeshiftColumn + weekOffset;
+                        return availableGroups;
+                    }
 
-                            foreach (var yearLevel in selectedYearLevels)
-                            {
-                                int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                    // Validate if selected groups exist for the selected year levels
+                    for (int i = 0; i < selectedYearLevels.Length; i++)
+                    {
+                        var yearLevel = selectedYearLevels[i];
+                        if (!yearLevelStartRows.ContainsKey(yearLevel))
+                        {
+                            MessageBox.Show($"Year level '{yearLevel}' is not defined.");
+                            return;
+                        }
 
-                                // Randomly select one group to assign for the week
-                                int randomGroupIndex;
-                                string groupToAssign;
+                        int startingRow = yearLevelStartRows[yearLevel];
 
-                                do
-                                {
-                                    randomGroupIndex = random.Next(availableGroups.Count);
-                                    groupToAssign = availableGroups[randomGroupIndex];
-                                } while (groupToAssign == lastAssignedGroup && availableGroups.Count > 1);
+                        // Get available groups dynamically from Excel
+                        int availableGroups = GetAvailableGroups(startingRow, worksheet);
 
-                                availableGroups.RemoveAt(randomGroupIndex);
-                                lastAssignedGroup = groupToAssign;
-
-                                int targetRow = startingRowForYearLevel + int.Parse(groupToAssign) - 1;
-
-                                if (string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, targetColumn).GetString()))
-                                {
-                                    int randomAreaIndex = random.Next(selectedAreas.Length);
-                                    string areaToAssign = selectedAreas[randomAreaIndex];
-
-                                    worksheet.Cell(targetRow, targetColumn).Value = areaToAssign;
-                                    worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-                                    worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor);
-                                }
-                                else
-                                {
-                                    MessageBox.Show($"Conflict detected in year level {yearLevel}, group {groupToAssign}, timeshift {timeshift}, week {week + 1}.");
-                                }
-                            }
+                        if (numberOfGroups[i] > availableGroups)
+                        {
+                            MessageBox.Show($"The number of groups for '{yearLevel}' exceeds the available groups. Maximum groups: {availableGroups}.");
+                            return;
                         }
                     }
 
+                    // Find the next available week for the selected timeshift
+                    int week = 0;
+                    int timeshiftColumn = baseTimeshiftColumns[selectedTimeshift];
+
+                    // Iterate through the weeks to find the first unfilled week
+                    while (true)
+                    {
+                        int weekOffset = week * 3; // Each week starts 3 columns later (since there are 3 timeshifts per week)
+                        int targetColumn = timeshiftColumn + weekOffset;
+
+                        bool isWeekFilled = false;
+                        foreach (var yearLevel in selectedYearLevels)
+                        {
+                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                            bool isYearLevelFilled = false;
+
+                            // Check if any group in the current week and timeshift is already filled
+                            for (int g = 0; g < numberOfGroups[selectedYearLevels.ToList().IndexOf(yearLevel)]; g++)
+                            {
+                                int targetRow = startingRowForYearLevel + g;
+                                if (!string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, targetColumn).GetString()))
+                                {
+                                    isYearLevelFilled = true;
+                                    break; // If any group is filled, the week is considered filled for this year level
+                                }
+                            }
+
+                            if (isYearLevelFilled)
+                            {
+                                isWeekFilled = true;
+                                break; // If the week is filled for any year level, move to the next week
+                            }
+                        }
+
+                        if (!isWeekFilled)
+                        {
+                            break; // If the week is not filled for any year level, stop searching and start filling this week
+                        }
+
+                        week++; // Move to the next week
+                    }
+
+                    // Now insert the areas starting from the first available week
+                    for (int w = 0; w < numberOfWeeks; w++)
+                    {
+                        int weekOffset = (week + w) * 3; // Calculate the offset for each week dynamically
+                        int targetColumn = timeshiftColumn + weekOffset;
+
+                        // Insert areas for each selected year level and groups
+                        for (int i = 0; i < selectedYearLevels.Length; i++)
+                        {
+                            var yearLevel = selectedYearLevels[i];
+                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                            int areaIndex = 0; // Track the current area being placed
+
+                            // Insert areas only for the number of groups specified for this year level
+                            for (int g = 0; g < numberOfGroups[i]; g++)
+                            {
+                                if (areaIndex >= selectedAreas.Length) // If we run out of areas, reset the index to start over
+                                {
+                                    areaIndex = 0;
+                                }
+
+                                int targetRow = startingRowForYearLevel + g; // Adjust row based on group number
+
+                                // Place the area in the timeshift column for the current group
+                                worksheet.Cell(targetRow, targetColumn).Value = selectedAreas[areaIndex];
+                                worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                                worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(XLColor.White); // Optional: Adjust color
+
+                                areaIndex++; // Move to the next area
+                            }
+                        }
+                    }
 
                     // Save the Excel file
                     workbook.SaveAs(filePath);
@@ -1025,119 +1206,6 @@ namespace WinFormsApp3
                     MessageBox.Show($"An error occurred: {ex.Message}");
                 }
             }
-
-
-
-            // Function to retrieve background and text color from the database
-            (XLColor backgroundColor, XLColor textColor) GetInstructorColorsFromDatabase(string instructorName)
-            {
-                string backgroundColorName = "";
-                string textColorName = "";
-
-                // SQL connection and query to retrieve the background and text colors
-                string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;"; // Replace with your actual connection string
-                string query = "SELECT backgroundColor, textColor FROM ClinicalInstructors WHERE InstructorName = @InstructorName";
-
-                using (MySqlConnection conn = new MySqlConnection(connectionString))
-                {
-                    conn.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@instructorName", instructorName);
-
-                        // Execute the query and retrieve the colors
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                backgroundColorName = reader["backgroundColor"]?.ToString() ?? "NoColor"; // Use default "NoColor"
-                                textColorName = reader["textColor"]?.ToString() ?? "Black"; // Default to "Black"
-                            }
-                            else
-                            {
-                                MessageBox.Show($"No colors found for the Clinical Instructor: {instructorName}");
-                                return (XLColor.NoColor, XLColor.Black); // Default to no color and black text if not found
-                            }
-                        }
-                    }
-                }
-                // line 948 to line 1056 is to be fixed later 
-
-                // Map the color names to XLColor for ClosedXML
-                XLColor backgroundColor = MapColorNameToXLColor(backgroundColorName);
-                XLColor textColor = MapColorNameToXLColor(textColorName);
-
-                return (backgroundColor, textColor);
-            }
-
-            // Helper function to map color names from the database to XLColor
-            XLColor MapColorNameToXLColor(string colorName)
-            {
-                switch (colorName?.ToLower()) // Ensure colorName is not null
-                {
-                    case "red":
-                        return XLColor.Red;
-                    case "blue":
-                        return XLColor.Blue;
-                    case "green":
-                        return XLColor.Green;
-                    case "yellow":
-                        return XLColor.Yellow;
-                    case "pink":
-                        return XLColor.Pink;
-                    case "brown":
-                        return XLColor.Brown;
-                    case "gray":
-                        return XLColor.Gray;
-                    case "orange":
-                        return XLColor.Orange;
-                    case "violet":
-                        return XLColor.Violet;
-                    // Add more colors as needed
-                    default:
-                        return XLColor.NoColor; // Default to no color if not recognized
-                }
-            }
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lstTimeShifts_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel3_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panel2_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void lstClinicalInstructors_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label13_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label12_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

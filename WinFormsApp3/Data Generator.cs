@@ -199,14 +199,6 @@ namespace WinFormsApp3
 
         private void button2_Click(object sender, EventArgs e)
         {
-            // Instantiate the DateRangeForm
-            DateRangeForm dateRangeForm = new DateRangeForm();
-
-            // Center the DateRangeForm on the screen
-            dateRangeForm.StartPosition = FormStartPosition.CenterScreen;
-
-            // Show the DateRangeForm as a modal dialog
-            dateRangeForm.ShowDialog();
         }
 
         private void button3_Click(object sender, EventArgs e)

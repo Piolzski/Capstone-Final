@@ -59,7 +59,6 @@
             label15 = new Label();
             label16 = new Label();
             textBoxgrp = new TextBox();
-            button2 = new Button();
             label17 = new Label();
             textBoxColorCode = new TextBox();
             label18 = new Label();
@@ -399,19 +398,6 @@
             textBoxgrp.TabIndex = 35;
             textBoxgrp.TextChanged += textBoxgrp_TextChanged;
             // 
-            // button2
-            // 
-            button2.BackColor = Color.DarkOrange;
-            button2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button2.Location = new Point(601, 487);
-            button2.Margin = new Padding(3, 4, 3, 4);
-            button2.Name = "button2";
-            button2.Size = new Size(361, 116);
-            button2.TabIndex = 16;
-            button2.Text = "Generate";
-            button2.UseVisualStyleBackColor = false;
-            button2.Click += button2_Click;
-            // 
             // label17
             // 
             label17.AutoSize = true;
@@ -483,7 +469,6 @@
             Controls.Add(button4);
             Controls.Add(textBox1);
             Controls.Add(pictureBox1);
-            Controls.Add(button2);
             Controls.Add(label10);
             Controls.Add(label6);
             Controls.Add(textBoxTime);
@@ -537,7 +522,6 @@
         private Label label15;
         private Label label16;
         private TextBox textBoxgrp;
-        private Button button2;
         private Label label17;
         private TextBox textBoxColorCode;
         private Label label18;
