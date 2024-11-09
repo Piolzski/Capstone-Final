@@ -37,6 +37,13 @@ namespace WinFormsApp3
             LoadDepartments();
             LoadGroups();
             LoadTimeShifts();
+            textBox1.Clear();
+            textBox16hrs.Clear();
+            groupbox2.Text = string.Empty;
+            groupbox3.Text = string.Empty;
+            groupbox4.Text = string.Empty;
+
+
         }
 
         private void LoadClinicalInstructors()
@@ -426,6 +433,8 @@ namespace WinFormsApp3
                 {
                     MessageBox.Show($"An error occurred: {ex.Message}");
                 }
+
+
             }
 
         }
@@ -505,15 +514,7 @@ namespace WinFormsApp3
             }
         }
 
-        private void button5_Click(object sender, EventArgs e)
-        {
-           // nothing here it is already changed 
-        }
 
-        private void button6_Click(object sender, EventArgs e)
-        {
-            // nothing to follow it is already changed 
-        }
 
         private void lstYearLevels_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -523,7 +524,6 @@ namespace WinFormsApp3
         private void button7_Click(object sender, EventArgs e)
         {
             // Path for saving the Excel file
-            // keep button for the deployment of C.I 
             string filePath = Path.Combine(@"C:\excellsheet\", "RotationSchedule.xlsx");
 
             using (var workbook = File.Exists(filePath) ? new XLWorkbook(filePath) : new XLWorkbook()) // Open existing workbook or create new one
@@ -548,12 +548,6 @@ namespace WinFormsApp3
                     // Retrieve the C.I.'s colors from the database (background and text color)
                     var (backgroundColor, textColor) = GetInstructorColorsFromDatabase(selectedCI);
 
-                    // Check if we already have information for this C.I.
-                    if (!clinicalInstructorsInfo.ContainsKey(selectedCI))
-                    {
-                        clinicalInstructorsInfo[selectedCI] = (backgroundColor, 0); // Initialize the C.I.'s info with week 0
-                    }
-
                     // Retrieve the number of groups from the textboxes
                     int groupsIn2ndYear = int.TryParse(groupbox2.Text, out int g2) ? g2 : 0;
                     int groupsIn3rdYear = int.TryParse(groupbox3.Text, out int g3) ? g3 : 0;
@@ -573,11 +567,11 @@ namespace WinFormsApp3
                         return;
                     }
 
-                    // Define starting rows for year levels
-                    Dictionary<string, int> yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
-            { "2nd year", 6 },  // Start row for 2nd Year
-            { "3rd year", 22 },  // Start row for 3rd Year
-            { "4th year", 38 }   // Start row for 4th Year
+                    // Define starting rows and map year levels to integer values
+                    Dictionary<string, (int StartRow, int YearInt)> yearLevelStartRows = new Dictionary<string, (int, int)>(StringComparer.OrdinalIgnoreCase) {
+            { "2nd year", (6, 2) },  // Start row and integer mapping for 2nd Year
+            { "3rd year", (22, 3) },  // Start row and integer mapping for 3rd Year
+            { "4th year", (38, 4) }   // Start row and integer mapping for 4th Year
         };
 
                     // Define the base columns for each timeshift
@@ -603,16 +597,19 @@ namespace WinFormsApp3
                         return;
                     }
 
-                    // Get the number of rotations dynamically
+                    // Validate input for number of rotations if required
                     int numberOfRotations;
-                    if (!int.TryParse(textBox1.Text, out numberOfRotations) || numberOfRotations <= 0)
+                    bool isRotationsValid = int.TryParse(textBox1.Text, out numberOfRotations) && numberOfRotations > 0;
+
+                    // Validate input for 16-hour shift week
+                    int weekFor16HourShift;
+                    bool is16HourShiftValid = int.TryParse(textBox16hrs.Text, out weekFor16HourShift) && weekFor16HourShift > 0;
+
+                    if (!isRotationsValid && !is16HourShiftValid)
                     {
-                        MessageBox.Show("Invalid number of rotations.");
+                        MessageBox.Show("Invalid number of rotations or 16-hour shift week must be specified.");
                         return;
                     }
-
-                    // Retrieve weeks to exclude from the week excluder checklistbox
-                    var excludedWeeks = checklistboxExclude.CheckedItems.Cast<string>().Select(int.Parse).ToHashSet();
 
                     // Initialize random number generator
                     Random random = new Random();
@@ -630,7 +627,7 @@ namespace WinFormsApp3
                             // Loop through each year level to find the last week where a C.I. rotation exists based on color
                             foreach (var yearLevel in yearLevelStartRows.Keys)
                             {
-                                int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                                int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
 
                                 // Loop through the weeks to find the last filled week for the C.I.
                                 for (int week = 0; week < 50; week++) // Assuming 50 as the maximum number of weeks
@@ -665,78 +662,206 @@ namespace WinFormsApp3
                         return lastWeek;
                     }
 
+                    // Global tracking dictionary to avoid conflicts across C.I.s
+                    var globalGroupAssignments = new Dictionary<(int yearLevel, string timeshift, int week), HashSet<int>>();
+
                     // Get the last week for the selected C.I. using its color from the database
                     int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor);
-                    // Insert the rotations starting from the last known week for the current C.I.
-                    foreach (var timeshift in selectedTimeshifts)
-                    {
-                        // Copy the list of all available groups
-                        List<int> groupsForRotationCycle = new List<int>(allGroups);
 
-                        // Ensure the number of groups does not exceed the number of rotations
-                        if (groupsForRotationCycle.Count > numberOfRotations)
+                    // Retrieve weeks to exclude from the week excluder checklistbox
+                    var excludedWeeks = new HashSet<int>(
+                        checklistboxExclude.CheckedItems.Cast<string>().Select(int.Parse)
+                    );
+
+                    // Track the assigned weeks for each combination of year level (as an integer) and timeshift
+                    var assignedWeeks = new Dictionary<(int yearLevel, string timeshift), HashSet<int>>();
+
+                    // Initialize the tracking dictionary for all combinations of year levels and timeshifts
+                    foreach (var yearLevel in selectedYearLevels)
+                    {
+                        var yearLevelInt = yearLevelStartRows[yearLevel].YearInt; // Get the integer representation of the year level
+
+                        foreach (var timeshift in selectedTimeshifts)
                         {
-                            // Shuffle and take only the first 'numberOfRotations' groups
-                            groupsForRotationCycle = groupsForRotationCycle.OrderBy(g => random.Next()).Take(numberOfRotations).ToList();
+                            assignedWeeks[(yearLevelInt, timeshift)] = new HashSet<int>();
+                        }
+                    }
+
+                    // Find the first available week that's not excluded
+                    int startingWeek = lastWeekForCI + 1;
+                    while (excludedWeeks.Contains(startingWeek))
+                    {
+                        startingWeek++; // Keep incrementing until we find a non-excluded week
+                    }
+
+                    // Insert the rotations if a valid number of rotations is provided
+                    if (isRotationsValid)
+                    {
+                        // Original logic to process rotations for Clinical Instructors
+                        foreach (var timeshift in selectedTimeshifts)
+                        {
+                            // Copy the list of all available groups
+                            List<int> groupsForRotationCycle = new List<int>(allGroups);
+
+                            // Ensure the number of groups does not exceed the number of rotations
+                            if (groupsForRotationCycle.Count > numberOfRotations)
+                            {
+                                // Shuffle and take only the first 'numberOfRotations' groups
+                                groupsForRotationCycle = groupsForRotationCycle.OrderBy(g => random.Next()).Take(numberOfRotations).ToList();
+                            }
+
+                            int currentRotation = 0; // Track current rotation count
+
+                            // Start the week count at the determined starting week
+                            int week = startingWeek;
+                            while (currentRotation < numberOfRotations)
+                            {
+                                // Skip the weeks that are marked as excluded or if the week has already been assigned for this combination
+                                if (excludedWeeks.Contains(week) || assignedWeeks.Values.Any(weeks => weeks.Contains(week)))
+                                {
+                                    week++;
+                                    continue; // Move to the next week if the current one is excluded or already assigned
+                                }
+
+                                int weekOffset = (week - 1) * 3;
+                                int timeshiftColumn = baseTimeshiftColumns[timeshift];
+                                int targetColumn = timeshiftColumn + weekOffset;
+
+                                bool rotationAssigned = false;
+
+                                foreach (var yearLevel in selectedYearLevels)
+                                {
+                                    var yearLevelInt = yearLevelStartRows[yearLevel].YearInt; // Get the integer representation
+
+                                    // Check if the current week has already been assigned for this year level and timeshift
+                                    if (assignedWeeks[(yearLevelInt, timeshift)].Contains(week))
+                                    {
+                                        continue; // Skip if this combination already has an assigned rotation in this week
+                                    }
+
+                                    // Check the global dictionary to avoid conflicts across C.I.s
+                                    if (!globalGroupAssignments.ContainsKey((yearLevelInt, timeshift, week)))
+                                    {
+                                        globalGroupAssignments[(yearLevelInt, timeshift, week)] = new HashSet<int>();
+                                    }
+
+                                    int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
+
+                                    // Randomly select one group to assign for the week
+                                    int randomGroupIndex = random.Next(groupsForRotationCycle.Count);
+                                    int groupToAssign = groupsForRotationCycle[randomGroupIndex];
+
+                                    // Check if the group has already been assigned globally
+                                    if (globalGroupAssignments[(yearLevelInt, timeshift, week)].Contains(groupToAssign))
+                                    {
+                                        continue; // Skip if the group is already assigned by another C.I. in the same week and timeshift
+                                    }
+
+                                    // Assign the group
+                                    groupsForRotationCycle.RemoveAt(randomGroupIndex); // Remove selected group from the cycle
+
+                                    int actualGroupNumber;
+                                    if (groupToAssign > 200) actualGroupNumber = groupToAssign - 200;
+                                    else if (groupToAssign > 100) actualGroupNumber = groupToAssign - 100;
+                                    else actualGroupNumber = groupToAssign;
+
+                                    int targetRow = startingRowForYearLevel + actualGroupNumber - 1;
+
+                                    if (string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, targetColumn).GetString()))
+                                    {
+                                        int randomAreaIndex = random.Next(selectedAreas.Length);
+                                        string areaToAssign = selectedAreas[randomAreaIndex];
+
+                                        worksheet.Cell(targetRow, targetColumn).Value = areaToAssign;
+                                        worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                                        worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor);
+
+                                        // Mark this week as assigned for the current year level and timeshift
+                                        assignedWeeks[(yearLevelInt, timeshift)].Add(week);
+
+                                        // Add the group to the global tracking dictionary
+                                        globalGroupAssignments[(yearLevelInt, timeshift, week)].Add(groupToAssign);
+
+                                        // Increment rotation count and set the flag to indicate successful assignment
+                                        currentRotation++;
+                                        rotationAssigned = true;
+                                        break; // Move on to the next week once a rotation is assigned for this year level
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show($"Conflict detected in year level {yearLevel}, group {actualGroupNumber}, timeshift {timeshift}, week {week + 1}.");
+                                    }
+                                }
+
+                                if (rotationAssigned)
+                                {
+                                    // Move to the next week after a successful assignment to avoid multiple rotations in the same week
+                                    week++;
+                                }
+                            }
+                        }
+                    }
+
+                    // Process the 16-hour shift independently if a valid week is specified
+                    if (is16HourShiftValid)
+                    {
+                        // Determine the target column based on the timeshift selection
+                        int targetColumnFor16hrShift;
+                        if (selectedTimeshifts.Contains("3pm to 11pm"))
+                        {
+                            // Use the "7am to 3pm" column if "3pm to 11pm" is selected
+                            targetColumnFor16hrShift = baseTimeshiftColumns["7am to 3pm"];
+                        }
+                        else
+                        {
+                            // Otherwise, default to "3pm to 11pm" as the column for the 16-hour shift
+                            targetColumnFor16hrShift = baseTimeshiftColumns["3pm to 11pm"];
                         }
 
-                        // Start from the next week after the last filled week
-                        int startingWeek = lastWeekForCI + 1;
+                        int weekOffsetFor16hrShift = (weekFor16HourShift - 1) * 3;
+                        int finalColumnFor16hrShift = targetColumnFor16hrShift + weekOffsetFor16hrShift;
 
-                        for (int rotation = 0; rotation < numberOfRotations; rotation++)
+                        foreach (var yearLevel in selectedYearLevels)
                         {
-                            int week = startingWeek + rotation;
+                            var yearLevelInt = yearLevelStartRows[yearLevel].YearInt;
 
-                            // Skip the weeks that are marked as excluded
-                            if (excludedWeeks.Contains(week))
+                            if (!globalGroupAssignments.ContainsKey((yearLevelInt, "16hr_shift", weekFor16HourShift)))
                             {
-                                continue;
+                                globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)] = new HashSet<int>();
                             }
 
-                            if (groupsForRotationCycle.Count == 0)
+                            int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
+
+                            // Randomly select one group to assign for the 16-hour shift
+                            int randomGroupIndex = random.Next(allGroups.Count);
+                            int groupToAssign = allGroups[randomGroupIndex];
+
+                            // Check if the group has already been assigned globally for this 16-hour shift
+                            if (globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)].Contains(groupToAssign))
                             {
-                                // If no groups are left in this cycle, reset the groups for the next rotation cycle
-                                groupsForRotationCycle = new List<int>(allGroups);
-                                if (groupsForRotationCycle.Count > numberOfRotations)
-                                {
-                                    // Shuffle and take only the first 'numberOfRotations' groups
-                                    groupsForRotationCycle = groupsForRotationCycle.OrderBy(g => random.Next()).Take(numberOfRotations).ToList();
-                                }
+                                continue; // Skip if the group is already assigned in this 16-hour shift
                             }
 
-                            int weekOffset = (week - 1) * 3;
-                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
-                            int targetColumn = timeshiftColumn + weekOffset;
+                            allGroups.RemoveAt(randomGroupIndex); // Remove selected group from the pool
 
-                            foreach (var yearLevel in selectedYearLevels)
+                            int actualGroupNumber;
+                            if (groupToAssign > 200) actualGroupNumber = groupToAssign - 200;
+                            else if (groupToAssign > 100) actualGroupNumber = groupToAssign - 100;
+                            else actualGroupNumber = groupToAssign;
+
+                            int targetRow = startingRowForYearLevel + actualGroupNumber - 1;
+
+                            if (string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, finalColumnFor16hrShift).GetString()))
                             {
-                                int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                                int randomAreaIndex = random.Next(selectedAreas.Length);
+                                string areaToAssign = selectedAreas[randomAreaIndex];
 
-                                // Randomly select one group to assign for the week
-                                int randomGroupIndex = random.Next(groupsForRotationCycle.Count);
-                                int groupToAssign = groupsForRotationCycle[randomGroupIndex];
-                                groupsForRotationCycle.RemoveAt(randomGroupIndex); // Remove selected group from the cycle
+                                worksheet.Cell(targetRow, finalColumnFor16hrShift).Value = areaToAssign;
+                                worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                                worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Fill.SetBackgroundColor(backgroundColor);
 
-                                int actualGroupNumber;
-                                if (groupToAssign > 200) actualGroupNumber = groupToAssign - 200;
-                                else if (groupToAssign > 100) actualGroupNumber = groupToAssign - 100;
-                                else actualGroupNumber = groupToAssign;
-
-                                int targetRow = startingRowForYearLevel + actualGroupNumber - 1;
-
-                                if (string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, targetColumn).GetString()))
-                                {
-                                    int randomAreaIndex = random.Next(selectedAreas.Length);
-                                    string areaToAssign = selectedAreas[randomAreaIndex];
-
-                                    worksheet.Cell(targetRow, targetColumn).Value = areaToAssign;
-                                    worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-                                    worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor);
-                                }
-                                else
-                                {
-                                    MessageBox.Show($"Conflict detected in year level {yearLevel}, group {actualGroupNumber}, timeshift {timeshift}, week {week + 1}.");
-                                }
+                                // Mark this group as assigned globally for the 16-hour shift
+                                globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)].Add(groupToAssign);
                             }
                         }
                     }
@@ -750,7 +875,23 @@ namespace WinFormsApp3
                 {
                     MessageBox.Show($"An error occurred: {ex.Message}");
                 }
+
+                // Clear text and selections after processing
+                lstTimeShifts.ClearSelected();
+                lstYearLevels.ClearSelected();
+                listBox1.ClearSelected();
+                lstClinicalInstructors.ClearSelected();
+
+                textBox1.Clear();
+                textBox16hrs.Clear();
+                groupbox2.Text = string.Empty;
+                groupbox3.Text = string.Empty;
+                groupbox4.Text = string.Empty;
+
             }
+
+
+
 
 
 
@@ -822,8 +963,23 @@ namespace WinFormsApp3
                     // Add more colors as needed
                     default:
                         return XLColor.NoColor; // Default to no color if not recognized
+
+
+
                 }
             }
+        }
+
+
+        // empty functions means that it would no be used anymore
+        private void button5_Click(object sender, EventArgs e)
+        {
+            // nothing here it is already changed 
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            // nothing to follow it is already changed 
         }
 
         private void label3_Click(object sender, EventArgs e)
@@ -869,7 +1025,6 @@ namespace WinFormsApp3
         private void button7_Click_1(object sender, EventArgs e)
         {
             // Path for saving the Excel file
-            // new button for the clearing of areas 
             string filePath = Path.Combine(@"C:\excellsheet", "RotationSchedule.xlsx");
 
             using (var workbook = File.Exists(filePath) ? new XLWorkbook(filePath) : new XLWorkbook()) // Open existing workbook or create new one
@@ -885,13 +1040,6 @@ namespace WinFormsApp3
 
                 try
                 {
-                    // Get the number of weeks from user input (assuming it's input via a TextBox or another control)
-                    if (!int.TryParse(txtNumberOfWeeks.Text, out int numberOfWeeks) || numberOfWeeks <= 0)
-                    {
-                        MessageBox.Show("Invalid number of weeks.");
-                        return;
-                    }
-
                     // Retrieve selected year levels from lstYearLevels (ListBox)
                     var selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().Select(s => s.Trim().ToLowerInvariant()).ToArray();
                     if (selectedYearLevels.Length == 0)
@@ -908,56 +1056,58 @@ namespace WinFormsApp3
                         return;
                     }
 
+                    // Retrieve selected Clinical Instructors from lstClinicalInstructors (ListBox)
+                    var selectedCIs = lstClinicalInstructors.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
+                    if (selectedCIs.Length == 0)
+                    {
+                        MessageBox.Show("No Clinical Instructor selected.");
+                        return;
+                    }
+
                     // Define starting rows for year levels with keys in lowercase for consistency
                     Dictionary<string, int> yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {
-            { "2nd year", 6 },  // Start row for 2nd Year
-            { "3rd year", 22 }, // Start row for 3rd Year
-            { "4th year", 38 }  // Start row for 4th Year
+            { "2nd year", 6 },
+            { "3rd year", 22 },
+            { "4th year", 38 }
         };
 
                     // Define the base columns for each timeshift (adjust based on your layout)
                     Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {
-            { "7am to 3pm", 2 },   // Base column for 7am to 3pm
-            { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
-            { "11pm to 7am", 4 }   // Base column for 11pm to 7am
+            { "7am to 3pm", 2 },
+            { "3pm to 11pm", 3 },
+            { "11pm to 7am", 4 }
         };
 
-                    // Clear the areas for each selected year level, timeshift, and week
-                    foreach (var yearLevel in selectedYearLevels)
+                    // Assuming instructor names are stored in a specific column (e.g., column 1)
+                    int instructorColumn = 1;
+
+                    // Check if a specific week is entered in textBoxSpecifiedWeeks
+                    if (int.TryParse(textBoxSpecifiedWeeks.Text, out int specificWeek) && specificWeek > 0)
                     {
-                        if (!yearLevelStartRows.ContainsKey(yearLevel))
+                        // Clear only the specified week independently of txtNumberOfWeeks
+                        int weekOffset = (specificWeek - 1) * 3;
+
+                        foreach (var yearLevel in selectedYearLevels)
                         {
-                            MessageBox.Show($"Year level '{yearLevel}' is not defined.");
-                            continue;
-                        }
+                            if (!yearLevelStartRows.ContainsKey(yearLevel))
+                            {
+                                MessageBox.Show($"Year level '{yearLevel}' is not defined.");
+                                continue;
+                            }
 
-                        int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                            int availableGroups = 0;
+                            int currentRow = startingRowForYearLevel;
 
-                        // **Read existing groups from Excel dynamically based on content**:
-                        int availableGroups = 0;
-                        int currentRow = startingRowForYearLevel;
+                            // Count available groups dynamically
+                            while (!string.IsNullOrWhiteSpace(worksheet.Cell(currentRow, 1).GetString()))
+                            {
+                                availableGroups++;
+                                currentRow++;
+                            }
 
-                        // Dynamically count the number of non-empty rows for groups
-                        while (!string.IsNullOrWhiteSpace(worksheet.Cell(currentRow, 1).GetString()))
-                        {
-                            availableGroups++;
-                            currentRow++;
-                        }
-
-                        if (availableGroups == 0)
-                        {
-                            MessageBox.Show($"No available groups found for {yearLevel}. Skipping.");
-                            continue; // Skip this year level if no groups are available
-                        }
-
-                        // Clear areas for the specified number of weeks
-                        for (int week = 0; week < numberOfWeeks; week++)
-                        {
-                            int weekOffset = week * 3; // Each week starts 3 columns later (one column for each timeshift)
-
-                            // Clear only the selected timeshifts
                             foreach (var selectedTimeshift in selectedTimeshifts)
                             {
                                 if (!baseTimeshiftColumns.ContainsKey(selectedTimeshift))
@@ -966,18 +1116,76 @@ namespace WinFormsApp3
                                     continue;
                                 }
 
-                                int timeshiftColumn = baseTimeshiftColumns[selectedTimeshift] + weekOffset; // Calculate the dynamic column for this timeshift and week
+                                int timeshiftColumn = baseTimeshiftColumns[selectedTimeshift] + weekOffset;
 
-                                // Loop through each row (group) for this year level and timeshift column
-                                for (int j = 0; j < availableGroups; j++) // Limit clearing to the number of available groups
+                                for (int j = 0; j < availableGroups; j++)
                                 {
-                                    int targetRow = startingRowForYearLevel + j; // Calculate the target row
+                                    int targetRow = startingRowForYearLevel + j;
+                                    string instructorAssigned = worksheet.Cell(targetRow, instructorColumn).GetString();
 
-                                    // Clear the cell in the timeshift column
-                                    worksheet.Cell(targetRow, timeshiftColumn).Clear();
+                                    // Clear cell only if the instructor matches one of the selected CIs
+                                    if (selectedCIs.Contains(instructorAssigned))
+                                    {
+                                        worksheet.Cell(targetRow, timeshiftColumn).Clear();
+                                    }
                                 }
                             }
                         }
+                    }
+                    else if (int.TryParse(txtNumberOfWeeks.Text, out int numberOfWeeks) && numberOfWeeks > 0)
+                    {
+                        // Clear areas for the specified number of weeks if textBoxSpecifiedWeeks is empty or invalid
+                        foreach (var yearLevel in selectedYearLevels)
+                        {
+                            if (!yearLevelStartRows.ContainsKey(yearLevel))
+                            {
+                                MessageBox.Show($"Year level '{yearLevel}' is not defined.");
+                                continue;
+                            }
+
+                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
+                            int availableGroups = 0;
+                            int currentRow = startingRowForYearLevel;
+
+                            while (!string.IsNullOrWhiteSpace(worksheet.Cell(currentRow, 1).GetString()))
+                            {
+                                availableGroups++;
+                                currentRow++;
+                            }
+
+                            for (int week = 0; week < numberOfWeeks; week++)
+                            {
+                                int weekOffset = week * 3;
+
+                                foreach (var selectedTimeshift in selectedTimeshifts)
+                                {
+                                    if (!baseTimeshiftColumns.ContainsKey(selectedTimeshift))
+                                    {
+                                        MessageBox.Show($"Timeshift '{selectedTimeshift}' is not defined.");
+                                        continue;
+                                    }
+
+                                    int timeshiftColumn = baseTimeshiftColumns[selectedTimeshift] + weekOffset;
+
+                                    for (int j = 0; j < availableGroups; j++)
+                                    {
+                                        int targetRow = startingRowForYearLevel + j;
+                                        string instructorAssigned = worksheet.Cell(targetRow, instructorColumn).GetString();
+
+                                        // Clear cell only if the instructor matches one of the selected CIs
+                                        if (selectedCIs.Contains(instructorAssigned))
+                                        {
+                                            worksheet.Cell(targetRow, timeshiftColumn).Clear();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please enter a valid number of weeks or a specific week to clear.");
+                        return;
                     }
 
                     // Reset the C.I.'s total rotations to zero after clearing areas
@@ -986,9 +1194,8 @@ namespace WinFormsApp3
                         if (yearLevelStartRows.ContainsKey(yearLevel))
                         {
                             int startingRowForYearLevel = yearLevelStartRows[yearLevel];
-                            int finalRowForCI = startingRowForYearLevel + 40; // Skip to the row where the C.I. name is
+                            int finalRowForCI = startingRowForYearLevel + 40;
 
-                            // Find and clear the "Total Rotations" cell (assuming it's right below the C.I. name)
                             worksheet.Cell(finalRowForCI + 1, baseTimeshiftColumns["7am to 3pm"]).Value = ""; // Reset to 0
                         }
                     }
@@ -1001,7 +1208,16 @@ namespace WinFormsApp3
                 {
                     MessageBox.Show($"An error occurred while clearing areas: {ex.Message}");
                 }
+
+                // Clear text and selections after processing
+                lstTimeShifts.ClearSelected();
+                lstYearLevels.ClearSelected();
+                lstClinicalInstructors.ClearSelected(); // Clear CI selections
+                txtNumberOfWeeks.Clear();
+                textBoxSpecifiedWeeks.Clear();
             }
+
+
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -1204,8 +1420,38 @@ namespace WinFormsApp3
                 catch (Exception ex)
                 {
                     MessageBox.Show($"An error occurred: {ex.Message}");
+
+                    // Clear text and selections after processing
+                    lstTimeShifts.ClearSelected();
+                    lstYearLevels.ClearSelected();
+                    listBox1.ClearSelected();
+                    lstClinicalInstructors.ClearSelected();
+
+
+                    textBox1.Clear();
+                    textBox16hrs.Clear();
+                    groupbox2.Text = string.Empty;
+                    groupbox3.Text = string.Empty;
+                    groupbox4.Text = string.Empty;
                 }
             }
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            // Close the current form (if needed)
+            this.Close();
+
+            // Instantiate the HOMEPAGE form
+            Dashboard dashboardForm = new Dashboard();
+
+            // Show the HOMEPAGE form
+            dashboardForm.Show();
+        }
+
+        private void label17_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

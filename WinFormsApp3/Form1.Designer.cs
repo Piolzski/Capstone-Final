@@ -62,8 +62,11 @@
             label13 = new Label();
             btnClinicalinstructor = new Button();
             panel1 = new Panel();
+            pictureBox2 = new PictureBox();
             pictureBox1 = new PictureBox();
             panel3 = new Panel();
+            label18 = new Label();
+            textBoxSpecifiedWeeks = new TextBox();
             panel2 = new Panel();
             panel6 = new Panel();
             button7 = new Button();
@@ -73,12 +76,13 @@
             label16 = new Label();
             button8 = new Button();
             panel4 = new Panel();
-            textBox2 = new TextBox();
+            textBox16hrs = new TextBox();
             label14 = new Label();
             checklistboxExclude = new CheckedListBox();
             panel5 = new Panel();
             label17 = new Label();
             panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel3.SuspendLayout();
             panel2.SuspendLayout();
@@ -102,7 +106,7 @@
             label2.AutoSize = true;
             label2.BackColor = Color.Wheat;
             label2.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            label2.Location = new Point(718, 28);
+            label2.Location = new Point(718, 9);
             label2.Name = "label2";
             label2.Size = new Size(187, 28);
             label2.TabIndex = 1;
@@ -164,59 +168,59 @@
             // 
             // dtpStartDate
             // 
-            dtpStartDate.Location = new Point(331, 39);
+            dtpStartDate.Location = new Point(336, 39);
             dtpStartDate.Margin = new Padding(3, 4, 3, 4);
             dtpStartDate.Name = "dtpStartDate";
-            dtpStartDate.Size = new Size(263, 27);
+            dtpStartDate.Size = new Size(258, 27);
             dtpStartDate.TabIndex = 7;
             // 
             // dtpEndDate
             // 
-            dtpEndDate.Location = new Point(331, 98);
+            dtpEndDate.Location = new Point(336, 98);
             dtpEndDate.Margin = new Padding(3, 4, 3, 4);
             dtpEndDate.Name = "dtpEndDate";
-            dtpEndDate.Size = new Size(263, 27);
+            dtpEndDate.Size = new Size(258, 27);
             dtpEndDate.TabIndex = 8;
             // 
             // lstClinicalInstructors
             // 
             lstClinicalInstructors.FormattingEnabled = true;
-            lstClinicalInstructors.Location = new Point(230, 20);
+            lstClinicalInstructors.Location = new Point(235, 19);
             lstClinicalInstructors.Margin = new Padding(3, 4, 3, 4);
             lstClinicalInstructors.Name = "lstClinicalInstructors";
             lstClinicalInstructors.SelectionMode = SelectionMode.MultiExtended;
-            lstClinicalInstructors.Size = new Size(285, 104);
+            lstClinicalInstructors.Size = new Size(280, 104);
             lstClinicalInstructors.TabIndex = 9;
             lstClinicalInstructors.SelectedIndexChanged += lstClinicalInstructors_SelectedIndexChanged;
             // 
             // lstYearLevels
             // 
             lstYearLevels.FormattingEnabled = true;
-            lstYearLevels.Location = new Point(1037, 66);
+            lstYearLevels.Location = new Point(1042, 66);
             lstYearLevels.Margin = new Padding(3, 4, 3, 4);
             lstYearLevels.Name = "lstYearLevels";
             lstYearLevels.SelectionMode = SelectionMode.MultiExtended;
-            lstYearLevels.Size = new Size(145, 64);
+            lstYearLevels.Size = new Size(140, 64);
             lstYearLevels.TabIndex = 11;
             lstYearLevels.SelectedIndexChanged += lstYearLevels_SelectedIndexChanged;
             // 
             // lstDepartments
             // 
             lstDepartments.FormattingEnabled = true;
-            lstDepartments.Location = new Point(38, 69);
+            lstDepartments.Location = new Point(43, 69);
             lstDepartments.Margin = new Padding(3, 4, 3, 4);
             lstDepartments.Name = "lstDepartments";
             lstDepartments.SelectionMode = SelectionMode.MultiExtended;
-            lstDepartments.Size = new Size(131, 84);
+            lstDepartments.Size = new Size(126, 84);
             lstDepartments.TabIndex = 12;
             lstDepartments.SelectedIndexChanged += listBox4_SelectedIndexChanged;
             // 
             // txtNumberOfWeeks
             // 
-            txtNumberOfWeeks.Location = new Point(696, 76);
+            txtNumberOfWeeks.Location = new Point(713, 43);
             txtNumberOfWeeks.Margin = new Padding(3, 4, 3, 4);
             txtNumberOfWeeks.Name = "txtNumberOfWeeks";
-            txtNumberOfWeeks.Size = new Size(210, 27);
+            txtNumberOfWeeks.Size = new Size(205, 27);
             txtNumberOfWeeks.TabIndex = 15;
             // 
             // label8
@@ -235,11 +239,11 @@
             // 
             lstTimeShifts.BackColor = Color.White;
             lstTimeShifts.FormattingEnabled = true;
-            lstTimeShifts.Location = new Point(42, 66);
+            lstTimeShifts.Location = new Point(47, 66);
             lstTimeShifts.Margin = new Padding(3, 4, 3, 4);
             lstTimeShifts.Name = "lstTimeShifts";
             lstTimeShifts.SelectionMode = SelectionMode.MultiExtended;
-            lstTimeShifts.Size = new Size(131, 64);
+            lstTimeShifts.Size = new Size(126, 64);
             lstTimeShifts.TabIndex = 18;
             lstTimeShifts.SelectedIndexChanged += lstTimeShifts_SelectedIndexChanged;
             // 
@@ -248,10 +252,10 @@
             button1.BackColor = Color.Green;
             button1.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button1.ForeColor = Color.White;
-            button1.Location = new Point(11, 240);
+            button1.Location = new Point(16, 240);
             button1.Margin = new Padding(3, 4, 3, 4);
             button1.Name = "button1";
-            button1.Size = new Size(219, 91);
+            button1.Size = new Size(214, 91);
             button1.TabIndex = 19;
             button1.Text = "Create Excel ";
             button1.UseVisualStyleBackColor = false;
@@ -262,10 +266,10 @@
             button3.BackColor = Color.SteelBlue;
             button3.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button3.ForeColor = Color.White;
-            button3.Location = new Point(11, 385);
+            button3.Location = new Point(16, 385);
             button3.Margin = new Padding(3, 4, 3, 4);
             button3.Name = "button3";
-            button3.Size = new Size(219, 91);
+            button3.Size = new Size(214, 91);
             button3.TabIndex = 20;
             button3.Text = "Open Excel";
             button3.UseVisualStyleBackColor = false;
@@ -276,10 +280,10 @@
             button4.BackColor = Color.Red;
             button4.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button4.ForeColor = Color.White;
-            button4.Location = new Point(11, 525);
+            button4.Location = new Point(16, 525);
             button4.Margin = new Padding(3, 4, 3, 4);
             button4.Name = "button4";
-            button4.Size = new Size(219, 91);
+            button4.Size = new Size(214, 91);
             button4.TabIndex = 21;
             button4.Text = "Close Excel";
             button4.UseVisualStyleBackColor = false;
@@ -290,10 +294,10 @@
             button2.BackColor = Color.Maroon;
             button2.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button2.ForeColor = Color.White;
-            button2.Location = new Point(11, 674);
+            button2.Location = new Point(16, 674);
             button2.Margin = new Padding(3, 4, 3, 4);
             button2.Name = "button2";
-            button2.Size = new Size(219, 91);
+            button2.Size = new Size(214, 91);
             button2.TabIndex = 22;
             button2.Text = "Delete Excel";
             button2.UseVisualStyleBackColor = false;
@@ -301,10 +305,10 @@
             // 
             // RotationTextBox
             // 
-            RotationTextBox.Location = new Point(425, 85);
+            RotationTextBox.Location = new Point(430, 85);
             RotationTextBox.Margin = new Padding(3, 4, 3, 4);
             RotationTextBox.Name = "RotationTextBox";
-            RotationTextBox.Size = new Size(170, 27);
+            RotationTextBox.Size = new Size(165, 27);
             RotationTextBox.TabIndex = 24;
             // 
             // label9
@@ -322,10 +326,10 @@
             button5.BackColor = Color.DarkOrange;
             button5.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button5.ForeColor = Color.White;
-            button5.Location = new Point(673, 69);
+            button5.Location = new Point(678, 69);
             button5.Margin = new Padding(3, 4, 3, 4);
             button5.Name = "button5";
-            button5.Size = new Size(256, 64);
+            button5.Size = new Size(251, 64);
             button5.TabIndex = 25;
             button5.Text = "Insert Areas To Excel";
             button5.UseVisualStyleBackColor = false;
@@ -336,10 +340,10 @@
             button6.BackColor = Color.DarkOrange;
             button6.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button6.ForeColor = Color.White;
-            button6.Location = new Point(1015, 69);
+            button6.Location = new Point(1020, 69);
             button6.Margin = new Padding(3, 4, 3, 4);
             button6.Name = "button6";
-            button6.Size = new Size(191, 64);
+            button6.Size = new Size(186, 64);
             button6.TabIndex = 26;
             button6.Text = "Clear Areas";
             button6.UseVisualStyleBackColor = false;
@@ -379,41 +383,41 @@
             // 
             // groupbox2
             // 
-            groupbox2.Location = new Point(314, 107);
+            groupbox2.Location = new Point(319, 107);
             groupbox2.Margin = new Padding(3, 4, 3, 4);
             groupbox2.Name = "groupbox2";
-            groupbox2.Size = new Size(131, 27);
+            groupbox2.Size = new Size(126, 27);
             groupbox2.TabIndex = 30;
             // 
             // groupbox3
             // 
-            groupbox3.Location = new Point(609, 107);
+            groupbox3.Location = new Point(614, 107);
             groupbox3.Margin = new Padding(3, 4, 3, 4);
             groupbox3.Name = "groupbox3";
-            groupbox3.Size = new Size(131, 27);
+            groupbox3.Size = new Size(126, 27);
             groupbox3.TabIndex = 31;
             // 
             // groupbox4
             // 
-            groupbox4.Location = new Point(887, 107);
+            groupbox4.Location = new Point(892, 107);
             groupbox4.Margin = new Padding(3, 4, 3, 4);
             groupbox4.Name = "groupbox4";
-            groupbox4.Size = new Size(131, 27);
+            groupbox4.Size = new Size(126, 27);
             groupbox4.TabIndex = 32;
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(1013, 63);
+            textBox1.Location = new Point(701, 59);
             textBox1.Margin = new Padding(3, 4, 3, 4);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(131, 27);
+            textBox1.Size = new Size(126, 27);
             textBox1.TabIndex = 34;
             // 
             // label13
             // 
             label13.AutoSize = true;
             label13.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label13.Location = new Point(888, 20);
+            label13.Location = new Point(569, 16);
             label13.Name = "label13";
             label13.Size = new Size(391, 28);
             label13.TabIndex = 35;
@@ -425,10 +429,10 @@
             btnClinicalinstructor.BackColor = Color.FromArgb(255, 128, 0);
             btnClinicalinstructor.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnClinicalinstructor.ForeColor = Color.White;
-            btnClinicalinstructor.Location = new Point(1316, 93);
+            btnClinicalinstructor.Location = new Point(1002, 114);
             btnClinicalinstructor.Margin = new Padding(3, 4, 3, 4);
             btnClinicalinstructor.Name = "btnClinicalinstructor";
-            btnClinicalinstructor.Size = new Size(211, 54);
+            btnClinicalinstructor.Size = new Size(206, 54);
             btnClinicalinstructor.TabIndex = 36;
             btnClinicalinstructor.Text = "Deploy CI Rotation";
             btnClinicalinstructor.UseVisualStyleBackColor = false;
@@ -438,6 +442,7 @@
             // 
             panel1.BackColor = Color.DarkOrange;
             panel1.BorderStyle = BorderStyle.Fixed3D;
+            panel1.Controls.Add(pictureBox2);
             panel1.Controls.Add(pictureBox1);
             panel1.Controls.Add(button1);
             panel1.Controls.Add(button4);
@@ -451,15 +456,28 @@
             panel1.TabIndex = 39;
             panel1.Paint += panel1_Paint;
             // 
+            // pictureBox2
+            // 
+            pictureBox2.BackColor = Color.DarkOrange;
+            pictureBox2.BackgroundImage = (Image)resources.GetObject("pictureBox2.BackgroundImage");
+            pictureBox2.BackgroundImageLayout = ImageLayout.Zoom;
+            pictureBox2.Location = new Point(3, -2);
+            pictureBox2.Margin = new Padding(3, 4, 3, 4);
+            pictureBox2.Name = "pictureBox2";
+            pictureBox2.Size = new Size(68, 60);
+            pictureBox2.TabIndex = 45;
+            pictureBox2.TabStop = false;
+            pictureBox2.Click += pictureBox2_Click;
+            // 
             // pictureBox1
             // 
             pictureBox1.BackgroundImage = (Image)resources.GetObject("pictureBox1.BackgroundImage");
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox1.BorderStyle = BorderStyle.FixedSingle;
-            pictureBox1.Location = new Point(51, 49);
+            pictureBox1.Location = new Point(51, 66);
             pictureBox1.Margin = new Padding(3, 4, 3, 4);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(146, 138);
+            pictureBox1.Size = new Size(141, 138);
             pictureBox1.TabIndex = 23;
             pictureBox1.TabStop = false;
             // 
@@ -467,6 +485,8 @@
             // 
             panel3.BackColor = Color.Wheat;
             panel3.BorderStyle = BorderStyle.Fixed3D;
+            panel3.Controls.Add(label18);
+            panel3.Controls.Add(textBoxSpecifiedWeeks);
             panel3.Controls.Add(label8);
             panel3.Controls.Add(lstTimeShifts);
             panel3.Controls.Add(label6);
@@ -477,12 +497,30 @@
             panel3.Controls.Add(label2);
             panel3.Controls.Add(lstYearLevels);
             panel3.Controls.Add(label3);
-            panel3.Location = new Point(274, 27);
+            panel3.Location = new Point(279, 27);
             panel3.Margin = new Padding(3, 4, 3, 4);
             panel3.Name = "panel3";
-            panel3.Size = new Size(1241, 179);
+            panel3.Size = new Size(1236, 179);
             panel3.TabIndex = 40;
             panel3.Paint += panel3_Paint;
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.BackColor = Color.Wheat;
+            label18.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            label18.Location = new Point(718, 102);
+            label18.Name = "label18";
+            label18.Size = new Size(171, 28);
+            label18.TabIndex = 20;
+            label18.Text = "Specified Weeks:";
+            // 
+            // textBoxSpecifiedWeeks
+            // 
+            textBoxSpecifiedWeeks.Location = new Point(712, 133);
+            textBoxSpecifiedWeeks.Name = "textBoxSpecifiedWeeks";
+            textBoxSpecifiedWeeks.Size = new Size(217, 27);
+            textBoxSpecifiedWeeks.TabIndex = 19;
             // 
             // panel2
             // 
@@ -495,10 +533,10 @@
             panel2.Controls.Add(lstDepartments);
             panel2.Controls.Add(label4);
             panel2.Controls.Add(button5);
-            panel2.Location = new Point(274, 230);
+            panel2.Location = new Point(279, 230);
             panel2.Margin = new Padding(3, 4, 3, 4);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1241, 195);
+            panel2.Size = new Size(1236, 195);
             panel2.TabIndex = 41;
             panel2.Paint += panel2_Paint;
             // 
@@ -512,10 +550,10 @@
             panel6.Controls.Add(listBox1);
             panel6.Controls.Add(label16);
             panel6.Controls.Add(button8);
-            panel6.Location = new Point(-2, -2);
+            panel6.Location = new Point(3, -2);
             panel6.Margin = new Padding(3, 4, 3, 4);
             panel6.Name = "panel6";
-            panel6.Size = new Size(1241, 195);
+            panel6.Size = new Size(1236, 195);
             panel6.TabIndex = 42;
             // 
             // button7
@@ -523,10 +561,10 @@
             button7.BackColor = Color.DarkOrange;
             button7.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button7.ForeColor = Color.White;
-            button7.Location = new Point(1008, 68);
+            button7.Location = new Point(1013, 68);
             button7.Margin = new Padding(3, 4, 3, 4);
             button7.Name = "button7";
-            button7.Size = new Size(191, 64);
+            button7.Size = new Size(186, 64);
             button7.TabIndex = 26;
             button7.Text = "Clear Areas";
             button7.UseVisualStyleBackColor = false;
@@ -534,10 +572,10 @@
             // 
             // textBox3
             // 
-            textBox3.Location = new Point(425, 85);
+            textBox3.Location = new Point(430, 85);
             textBox3.Margin = new Padding(3, 4, 3, 4);
             textBox3.Name = "textBox3";
-            textBox3.Size = new Size(170, 27);
+            textBox3.Size = new Size(165, 27);
             textBox3.TabIndex = 24;
             // 
             // label15
@@ -553,11 +591,11 @@
             // listBox1
             // 
             listBox1.FormattingEnabled = true;
-            listBox1.Location = new Point(38, 69);
+            listBox1.Location = new Point(43, 69);
             listBox1.Margin = new Padding(3, 4, 3, 4);
             listBox1.Name = "listBox1";
             listBox1.SelectionMode = SelectionMode.MultiExtended;
-            listBox1.Size = new Size(131, 84);
+            listBox1.Size = new Size(126, 84);
             listBox1.TabIndex = 12;
             // 
             // label16
@@ -575,10 +613,10 @@
             button8.BackColor = Color.DarkOrange;
             button8.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button8.ForeColor = Color.White;
-            button8.Location = new Point(660, 64);
+            button8.Location = new Point(665, 64);
             button8.Margin = new Padding(3, 4, 3, 4);
             button8.Name = "button8";
-            button8.Size = new Size(256, 64);
+            button8.Size = new Size(251, 64);
             button8.TabIndex = 25;
             button8.Text = "Insert Areas To Excel";
             button8.UseVisualStyleBackColor = false;
@@ -588,32 +626,32 @@
             // 
             panel4.BackColor = Color.Wheat;
             panel4.BorderStyle = BorderStyle.Fixed3D;
-            panel4.Controls.Add(textBox2);
+            panel4.Controls.Add(textBox16hrs);
             panel4.Controls.Add(label14);
             panel4.Controls.Add(label13);
             panel4.Controls.Add(lstClinicalInstructors);
             panel4.Controls.Add(btnClinicalinstructor);
             panel4.Controls.Add(label1);
             panel4.Controls.Add(textBox1);
-            panel4.Location = new Point(274, 452);
+            panel4.Location = new Point(279, 452);
             panel4.Margin = new Padding(3, 4, 3, 4);
             panel4.Name = "panel4";
-            panel4.Size = new Size(1569, 268);
+            panel4.Size = new Size(1236, 268);
             panel4.TabIndex = 42;
             // 
-            // textBox2
+            // textBox16hrs
             // 
-            textBox2.Location = new Point(1015, 152);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(125, 27);
-            textBox2.TabIndex = 39;
+            textBox16hrs.Location = new Point(701, 148);
+            textBox16hrs.Name = "textBox16hrs";
+            textBox16hrs.Size = new Size(120, 27);
+            textBox16hrs.TabIndex = 39;
             // 
             // label14
             // 
             label14.AutoSize = true;
             label14.BorderStyle = BorderStyle.FixedSingle;
             label14.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label14.Location = new Point(977, 105);
+            label14.Location = new Point(658, 101);
             label14.Name = "label14";
             label14.RightToLeft = RightToLeft.No;
             label14.Size = new Size(222, 30);
@@ -624,9 +662,9 @@
             // 
             checklistboxExclude.FormattingEnabled = true;
             checklistboxExclude.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
-            checklistboxExclude.Location = new Point(1564, 95);
+            checklistboxExclude.Location = new Point(1567, 68);
             checklistboxExclude.Name = "checklistboxExclude";
-            checklistboxExclude.Size = new Size(268, 224);
+            checklistboxExclude.Size = new Size(263, 224);
             checklistboxExclude.TabIndex = 37;
             // 
             // panel5
@@ -640,20 +678,21 @@
             panel5.Controls.Add(label12);
             panel5.Controls.Add(label10);
             panel5.Controls.Add(label5);
-            panel5.Location = new Point(274, 739);
+            panel5.Location = new Point(279, 739);
             panel5.Margin = new Padding(3, 4, 3, 4);
             panel5.Name = "panel5";
-            panel5.Size = new Size(1241, 198);
+            panel5.Size = new Size(1236, 198);
             panel5.TabIndex = 43;
             // 
             // label17
             // 
             label17.AutoSize = true;
-            label17.Location = new Point(1637, 64);
+            label17.Location = new Point(1637, 40);
             label17.Name = "label17";
             label17.Size = new Size(105, 20);
             label17.TabIndex = 44;
             label17.Text = "Week Excluder";
+            label17.Click += label17_Click;
             // 
             // Form1
             // 
@@ -673,6 +712,7 @@
             Text = "Form1";
             Load += Form1_Load;
             panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
@@ -730,7 +770,7 @@
         private Panel panel5;
         private CheckedListBox checklistboxExclude;
         private Label label14;
-        private TextBox textBox2;
+        private TextBox textBox16hrs;
         private Panel panel6;
         private Button button7;
         private TextBox textBox3;
@@ -739,5 +779,8 @@
         private Label label16;
         private Button button8;
         private Label label17;
+        private PictureBox pictureBox2;
+        private Label label18;
+        private TextBox textBoxSpecifiedWeeks;
     }
 }

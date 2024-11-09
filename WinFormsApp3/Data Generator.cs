@@ -74,12 +74,9 @@ namespace WinFormsApp3
 
         private void button1_Click(object sender, EventArgs e)
         {
-
-            //this code has experimental purposes to be followed more concepts sooner
-            //this will be one percent of the new system
+            // This code is experimental and part of the new system
             string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;";
 
-            // Check if at least one text box has input
             if (string.IsNullOrWhiteSpace(textBoxName.Text) &&
                 string.IsNullOrWhiteSpace(textBoxSpec.Text) &&
                 string.IsNullOrWhiteSpace(textBoxTime.Text) &&
@@ -90,7 +87,7 @@ namespace WinFormsApp3
                 string.IsNullOrWhiteSpace(textBoxLVLID.Text) &&
                 string.IsNullOrWhiteSpace(textBoxColorCode.Text) &&
                 string.IsNullOrWhiteSpace(textBoxTextColor.Text) &&
-                string.IsNullOrWhiteSpace(textBoxgrp.Text)) // Include textBoxgrp in the check
+                string.IsNullOrWhiteSpace(textBoxgrp.Text))
             {
                 MessageBox.Show("Please fill in at least one field.");
                 return;
@@ -105,7 +102,7 @@ namespace WinFormsApp3
                     // Insert data for clinical instructors if textbox has value
                     if (!string.IsNullOrWhiteSpace(textBoxName.Text) || !string.IsNullOrWhiteSpace(textBoxSpec.Text))
                     {
-                        string instructorInsertQuery = "INSERT INTO clinicalinstructors (InstructorName, Designation) VALUES (@Name, @Designation)";
+                        string instructorInsertQuery = "INSERT INTO clinicalinstructors (InstructorName, Designation, BackgroundColor, TextColor) VALUES (@Name, @Designation, @BackgroundColor, @TextColor)";
                         using (MySqlCommand instructorCommand = new MySqlCommand(instructorInsertQuery, connection))
                         {
                             instructorCommand.Parameters.AddWithValue("@Name", textBoxName.Text);
@@ -138,14 +135,13 @@ namespace WinFormsApp3
                         }
                     }
 
-                    // Check if both department name and hospital ID are provided
-                    if (!string.IsNullOrWhiteSpace(TextBoxDept.Text) && !string.IsNullOrWhiteSpace(textBox1.Text))
+                    // Insert data for hospital departments if TextBoxDept has value
+                    if (!string.IsNullOrWhiteSpace(TextBoxDept.Text))
                     {
-                        string departmentInsertQuery = "INSERT INTO hospitaldepartments (DepartmentName, HospitalID) VALUES (@Department, @HospitalID)";
+                        string departmentInsertQuery = "INSERT INTO hospitaldepartments (DepartmentName) VALUES (@DepartmentName)";
                         using (MySqlCommand departmentCommand = new MySqlCommand(departmentInsertQuery, connection))
                         {
-                            departmentCommand.Parameters.AddWithValue("@Department", TextBoxDept.Text);
-                            departmentCommand.Parameters.AddWithValue("@HospitalID", textBox1.Text);
+                            departmentCommand.Parameters.AddWithValue("@DepartmentName", TextBoxDept.Text);
                             departmentCommand.ExecuteNonQuery();
                         }
                     }
@@ -197,7 +193,8 @@ namespace WinFormsApp3
 
 
 
-        private void button2_Click(object sender, EventArgs e)
+
+            private void button2_Click(object sender, EventArgs e)
         {
         }
 
