@@ -74,7 +74,7 @@ namespace WinFormsApp3
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // This code is experimental and part of the new system
+        
             string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;";
 
             if (string.IsNullOrWhiteSpace(textBoxName.Text) &&

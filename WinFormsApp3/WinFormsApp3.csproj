@@ -15,6 +15,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="3.4.0" />
     <PackageReference Include="MySql.Data" Version="9.1.0" />
     <PackageReference Include="MySqlConnector" Version="2.3.7" />
+    <PackageReference Include="SpreadsheetGear" Version="9.3.12" />
   </ItemGroup>
 
 </Project>
