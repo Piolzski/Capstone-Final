@@ -1054,13 +1054,22 @@ namespace WinFormsApp3
             { "11pm to 7am", 4 }
         };
 
-                    // Retrieve selected year levels and timeshifts
+                    // Retrieve selected year levels, timeshifts, number of weeks, and specific weeks
                     var selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().Select(s => s.Trim().ToLowerInvariant()).ToArray();
                     var selectedTimeshifts = lstTimeShifts.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
 
-                    if (selectedYearLevels.Length == 0 || selectedTimeshifts.Length == 0)
+                    // Number of consecutive weeks
+                    int numberOfWeeks = int.TryParse(txtNumberOfWeeks.Text, out int parsedWeeks) ? parsedWeeks : 0;
+
+                    // Parse specific weeks from input, e.g., "3,6,9"
+                    var specifiedWeeks = textBoxSpecifiedWeeks.Text.Split(',')
+                                              .Select(s => int.TryParse(s.Trim(), out int week) ? week : -1)
+                                              .Where(w => w > 0)
+                                              .ToList();
+
+                    if (selectedYearLevels.Length == 0 || selectedTimeshifts.Length == 0 || (numberOfWeeks == 0 && specifiedWeeks.Count == 0))
                     {
-                        MessageBox.Show("Year levels or timeshifts are not selected.");
+                        MessageBox.Show("Please select year levels, timeshifts, and at least one of number of weeks or specific weeks.");
                         return;
                     }
 
@@ -1072,7 +1081,7 @@ namespace WinFormsApp3
             { "4th year", 38 }
         };
 
-                    // Clear areas based on selected C.I.'s color coding
+                    // Clear areas based on selected C.I.'s color coding, consecutive weeks, and specific weeks
                     foreach (var yearLevel in selectedYearLevels)
                     {
                         if (!yearLevelStartRows.ContainsKey(yearLevel))
@@ -1093,10 +1102,30 @@ namespace WinFormsApp3
 
                             int timeshiftColumn = baseTimeshiftColumns[timeshift];
 
-                            // Loop through weeks and groups to check and clear based on color
-                            for (int week = 0; week < 50; week++) // Assuming a max of 50 weeks
+                            // First, clear areas for the consecutive weeks (from week 1 up to the specified number of weeks)
+                            for (int week = 1; week <= numberOfWeeks; week++)
                             {
-                                int weekOffset = week * 3;
+                                int weekOffset = (week - 1) * 3;
+                                int targetColumn = timeshiftColumn + weekOffset;
+
+                                for (int groupNumber = 1; groupNumber <= 10; groupNumber++) // Assuming 10 groups
+                                {
+                                    int targetRow = startingRowForYearLevel + groupNumber - 1;
+
+                                    var cell = worksheet.Cell(targetRow, targetColumn);
+
+                                    // Clear cell only if it matches the selected C.I.'s background color
+                                    if (cell.Style.Fill.BackgroundColor == backgroundColor)
+                                    {
+                                        cell.Clear();
+                                    }
+                                }
+                            }
+
+                            // Then, clear areas for specific weeks if they aren't already included in the consecutive range
+                            foreach (int week in specifiedWeeks.Where(w => w > numberOfWeeks))
+                            {
+                                int weekOffset = (week - 1) * 3;
                                 int targetColumn = timeshiftColumn + weekOffset;
 
                                 for (int groupNumber = 1; groupNumber <= 10; groupNumber++) // Assuming 10 groups
@@ -1117,7 +1146,7 @@ namespace WinFormsApp3
 
                     // Save the updated Excel file
                     workbook.SaveAs(filePath);
-                    MessageBox.Show("Areas cleared successfully based on Clinical Instructor color coding.");
+                    MessageBox.Show("Areas cleared successfully based on Clinical Instructor color coding, number of weeks, and specified weeks.");
                 }
                 catch (Exception ex)
                 {
@@ -1125,16 +1154,7 @@ namespace WinFormsApp3
                 }
 
                 // Clear selections and inputs after processing
-                lstTimeShifts.ClearSelected();
-                lstYearLevels.ClearSelected();
-                listBox1.ClearSelected();
-                lstClinicalInstructors.ClearSelected();
-
-                textBox1.Clear();
-                textBox16hrs.Clear();
-                groupbox2.Text = string.Empty;
-                groupbox3.Text = string.Empty;
-                groupbox4.Text = string.Empty;
+                ClearSelections();
             }
 
             // Function to retrieve colors from the database
@@ -1172,40 +1192,45 @@ namespace WinFormsApp3
                 }
 
                 // Map the color names to XLColor for ClosedXML
-                XLColor backgroundColor = MapColorNameToXLColor(backgroundColorName);
-                XLColor textColor = MapColorNameToXLColor(textColorName);
-
-                return (backgroundColor, textColor);
+                return (MapColorNameToXLColor(backgroundColorName), MapColorNameToXLColor(textColorName));
             }
 
             // Helper function to map color names from the database to XLColor
             XLColor MapColorNameToXLColor(string colorName)
             {
-                switch (colorName?.ToLower())
+                return colorName?.ToLower() switch
                 {
-                    case "red":
-                        return XLColor.Red;
-                    case "blue":
-                        return XLColor.Blue;
-                    case "green":
-                        return XLColor.Green;
-                    case "yellow":
-                        return XLColor.Yellow;
-                    case "pink":
-                        return XLColor.Pink;
-                    case "brown":
-                        return XLColor.Brown;
-                    case "gray":
-                        return XLColor.Gray;
-                    case "orange":
-                        return XLColor.Orange;
-                    case "violet":
-                        return XLColor.Violet;
-                    // Add more colors as needed
-                    default:
-                        return XLColor.NoColor;
-                }
+                    "red" => XLColor.Red,
+                    "blue" => XLColor.Blue,
+                    "green" => XLColor.Green,
+                    "yellow" => XLColor.Yellow,
+                    "pink" => XLColor.Pink,
+                    "brown" => XLColor.Brown,
+                    "gray" => XLColor.Gray,
+                    "orange" => XLColor.Orange,
+                    "violet" => XLColor.Violet,
+                    _ => XLColor.NoColor
+                };
             }
+
+            // Helper function to clear selections and reset inputs
+            void ClearSelections()
+            {
+                lstTimeShifts.ClearSelected();
+                lstYearLevels.ClearSelected();
+                listBox1.ClearSelected();
+                lstClinicalInstructors.ClearSelected();
+
+                textBox1.Clear();
+                textBox16hrs.Clear();
+                textBoxSpecifiedWeeks.Clear();
+                txtNumberOfWeeks.Clear();
+                groupbox2.Text = string.Empty;
+                groupbox3.Text = string.Empty;
+                groupbox4.Text = string.Empty;
+            }
+
+
 
 
 

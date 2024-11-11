@@ -15,25 +15,27 @@ namespace WinFormsApp3
 {
     public partial class ExcelPreview : Form
     {
-        private IRange? usedRange; // Make nullable to handle uninitialized state
+        private IRange? usedRange; // Nullable to handle uninitialized state
 
         public ExcelPreview()
         {
             InitializeComponent();
-            // Set up event handler for virtual mode
             dataGridView1.CellValueNeeded += DataGridView1_CellValueNeeded;
+            this.Load += ExcelPreview_Load; // Attach the Load event handler
         }
 
-        private void btnLoadRotationSchedule_Click(object sender, EventArgs e)
+        private void ExcelPreview_Load(object? sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            // Specify the path to the Excel file in the designated directory
+            string filePath = @"C:\excellsheet\RotationSchedule.xlsx";
+
+            if (System.IO.File.Exists(filePath))
             {
-                openFileDialog.Filter = "Excel Files|*.xlsx;*.xls";
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Load the selected Excel file into the DataGridView with formatting
-                    LoadExcelWithFormatting(openFileDialog.FileName);
-                }
+                LoadExcelWithFormatting(filePath);
+            }
+            else
+            {
+                MessageBox.Show("File not found in C:\\excellsheet. Please check the file path and ensure the file is named 'Rotation Schedule.xlsx'.");
             }
         }
 
@@ -78,50 +80,48 @@ namespace WinFormsApp3
             dataGridView1.ResumeLayout();
         }
 
-        private void DataGridView1_CellValueNeeded(object? sender, DataGridViewCellValueEventArgs e) // Nullable sender
+        private void DataGridView1_CellValueNeeded(object? sender, DataGridViewCellValueEventArgs e)
         {
+            if (usedRange == null) return; // Ensure usedRange is populated
+
+            var cell = usedRange.Cells[e.RowIndex, e.ColumnIndex];
+            e.Value = cell.Value;
+
+            // Get the background color from the cell
+            System.Drawing.Color cellColor;
+
+            // If the color is black or undefined, set it to white
+            var spreadsheetGearColor = cell.Interior.Color;
+            if (spreadsheetGearColor.ToArgb() == 0 || spreadsheetGearColor.ToArgb() == System.Drawing.Color.Black.ToArgb())
             {
-                if (usedRange == null) return; // Ensure usedRange is populated
+                cellColor = System.Drawing.Color.White; // Default to white if color is undefined or black
+            }
+            else
+            {
+                cellColor = System.Drawing.Color.FromArgb(spreadsheetGearColor.ToArgb());
+            }
 
-                var cell = usedRange.Cells[e.RowIndex, e.ColumnIndex];
-                e.Value = cell.Value;
+            dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = cellColor;
 
-                // Get the background color from the cell
-                System.Drawing.Color cellColor;
+            // Apply bold font style if applicable
+            if (cell.Font.Bold)
+            {
+                dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.Font =
+                    new Font(dataGridView1.Font, FontStyle.Bold);
+            }
 
-                // If the color is black or undefined, set it to white
-                var spreadsheetGearColor = cell.Interior.Color;
-                if (spreadsheetGearColor.ToArgb() == 0 || spreadsheetGearColor.ToArgb() == System.Drawing.Color.Black.ToArgb())
+            // Apply font color from Excel cell
+            System.Drawing.Color fontColor = System.Drawing.Color.FromArgb(cell.Font.Color.ToArgb());
+            dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.ForeColor = fontColor;
+
+            // Handle merged cells by hiding values in subsequent cells to simulate merging
+            if (cell.MergeCells && cell.MergeArea.ColumnCount > 1)
+            {
+                for (int mergeCol = 1; mergeCol < cell.MergeArea.ColumnCount; mergeCol++)
                 {
-                    cellColor = System.Drawing.Color.White; // Default to white if color is undefined or black
-                }
-                else
-                {
-                    cellColor = System.Drawing.Color.FromArgb(spreadsheetGearColor.ToArgb());
-                }
-
-                dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = cellColor;
-
-                // Apply bold font style if applicable
-                if (cell.Font.Bold)
-                {
-                    dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.Font =
-                        new Font(dataGridView1.Font, FontStyle.Bold);
-                }
-
-                // Apply font color from Excel cell
-                System.Drawing.Color fontColor = System.Drawing.Color.FromArgb(cell.Font.Color.ToArgb());
-                dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.ForeColor = fontColor;
-
-                // Handle merged cells by hiding values in subsequent cells to simulate merging
-                if (cell.MergeCells && cell.MergeArea.ColumnCount > 1)
-                {
-                    for (int mergeCol = 1; mergeCol < cell.MergeArea.ColumnCount; mergeCol++)
+                    if (e.ColumnIndex + mergeCol < dataGridView1.ColumnCount)
                     {
-                        if (e.ColumnIndex + mergeCol < dataGridView1.ColumnCount)
-                        {
-                            dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex + mergeCol].Value = null;
-                        }
+                        dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex + mergeCol].Value = null;
                     }
                 }
             }
