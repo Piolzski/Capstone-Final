@@ -92,7 +92,7 @@ namespace WinFormsApp3
             dataGridView1.AutoResizeColumns();
         }
     }
-    // changed from spreadsheetgear to closedXML
+    // changed from spreadsheetgear to closedXML specified 
     // Extension method to enable double buffering in DataGridView
     public static class ExtensionMethods
     {
