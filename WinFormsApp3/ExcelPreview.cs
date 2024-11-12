@@ -1,35 +1,24 @@
-﻿using SpreadsheetGear;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿using System;
+using System.IO;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
-
+using ClosedXML.Excel;
 
 namespace WinFormsApp3
 {
     public partial class ExcelPreview : Form
     {
-        private IRange? usedRange; // Nullable to handle uninitialized state
-
         public ExcelPreview()
         {
             InitializeComponent();
-            dataGridView1.CellValueNeeded += DataGridView1_CellValueNeeded;
-            this.Load += ExcelPreview_Load; // Attach the Load event handler
+            this.Load += ExcelPreview_Load;
         }
 
         private void ExcelPreview_Load(object? sender, EventArgs e)
         {
-            // Specify the path to the Excel file in the designated directory
             string filePath = @"C:\excellsheet\RotationSchedule.xlsx";
 
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 LoadExcelWithFormatting(filePath);
             }
@@ -41,90 +30,81 @@ namespace WinFormsApp3
 
         private void LoadExcelWithFormatting(string filePath)
         {
-            // Suspend layout to improve performance during data load
+            // Enable double buffering to reduce flickering
+            dataGridView1.DoubleBuffered(true);
+
             dataGridView1.SuspendLayout();
-
-            // Set DataGridView properties to enhance performance
-            dataGridView1.VirtualMode = true; // Enable virtual mode for large data sets
-            dataGridView1.DoubleBuffered(true); // Enable double buffering (extension method)
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-            dataGridView1.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            dataGridView1.AllowUserToResizeRows = false;
-            dataGridView1.AllowUserToResizeColumns = false;
-
-            // Clear existing data
             dataGridView1.Rows.Clear();
             dataGridView1.Columns.Clear();
 
-            // Load the workbook using SpreadsheetGear
-            IWorkbook workbook = Factory.GetWorkbook(filePath);
-            IWorksheet worksheet = workbook.Worksheets[0];
-            usedRange = worksheet.UsedRange; // Store for use in virtual mode
-
-            // Set up columns based on the Excel columns
-            for (int col = 0; col < usedRange.ColumnCount; col++)
+            using (var workbook = new XLWorkbook(filePath))
             {
-                var headerText = usedRange.Cells[0, col].Text ?? $"Column{col}";
-                dataGridView1.Columns.Add($"Column{col}", headerText);
+                var worksheet = workbook.Worksheet(1);
+                var usedRange = worksheet.RangeUsed();
 
-                // Set a default column width based on Excel column width, with a multiplier for approximation
-                double excelColumnWidth = usedRange.Cells[0, col].ColumnWidth;
-                int gridColumnWidth = Convert.ToInt32(excelColumnWidth * 7); // Adjust multiplier as needed
-                dataGridView1.Columns[col].Width = Math.Max(50, Math.Min(300, gridColumnWidth));
-            }
-
-            // Set row count for virtual mode
-            dataGridView1.RowCount = usedRange.RowCount;
-
-            // Resume layout updates
-            dataGridView1.ResumeLayout();
-        }
-
-        private void DataGridView1_CellValueNeeded(object? sender, DataGridViewCellValueEventArgs e)
-        {
-            if (usedRange == null) return; // Ensure usedRange is populated
-
-            var cell = usedRange.Cells[e.RowIndex, e.ColumnIndex];
-            e.Value = cell.Value;
-
-            // Get the background color from the cell
-            System.Drawing.Color cellColor;
-
-            // If the color is black or undefined, set it to white
-            var spreadsheetGearColor = cell.Interior.Color;
-            if (spreadsheetGearColor.ToArgb() == 0 || spreadsheetGearColor.ToArgb() == System.Drawing.Color.Black.ToArgb())
-            {
-                cellColor = System.Drawing.Color.White; // Default to white if color is undefined or black
-            }
-            else
-            {
-                cellColor = System.Drawing.Color.FromArgb(spreadsheetGearColor.ToArgb());
-            }
-
-            dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = cellColor;
-
-            // Apply bold font style if applicable
-            if (cell.Font.Bold)
-            {
-                dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.Font =
-                    new Font(dataGridView1.Font, FontStyle.Bold);
-            }
-
-            // Apply font color from Excel cell
-            System.Drawing.Color fontColor = System.Drawing.Color.FromArgb(cell.Font.Color.ToArgb());
-            dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.ForeColor = fontColor;
-
-            // Handle merged cells by hiding values in subsequent cells to simulate merging
-            if (cell.MergeCells && cell.MergeArea.ColumnCount > 1)
-            {
-                for (int mergeCol = 1; mergeCol < cell.MergeArea.ColumnCount; mergeCol++)
+                if (usedRange == null)
                 {
-                    if (e.ColumnIndex + mergeCol < dataGridView1.ColumnCount)
+                    MessageBox.Show("No data found in the worksheet.");
+                    return;
+                }
+
+                // Set up columns based on Excel header row
+                for (int col = 1; col <= usedRange.ColumnCount(); col++)
+                {
+                    var headerText = usedRange.Cell(1, col).GetString() ?? $"Column{col}";
+                    dataGridView1.Columns.Add($"Column{col}", headerText);
+                }
+
+                // Populate rows with data from the worksheet
+                for (int row = 2; row <= usedRange.RowCount(); row++) // Start after header
+                {
+                    var rowData = new DataGridViewRow();
+
+                    for (int col = 1; col <= usedRange.ColumnCount(); col++)
                     {
-                        dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex + mergeCol].Value = null;
+                        var cell = usedRange.Cell(row, col);
+                        var cellValue = cell.GetString();
+                        var dataCell = new DataGridViewTextBoxCell { Value = cellValue };
+
+                        // Set background color if present
+                        if (!cell.Style.Fill.BackgroundColor.Equals(XLColor.NoColor))
+                        {
+                            dataCell.Style.BackColor = Color.FromArgb(cell.Style.Fill.BackgroundColor.Color.ToArgb());
+                        }
+
+                        // Apply bold font style if applicable
+                        if (cell.Style.Font.Bold)
+                        {
+                            dataCell.Style.Font = new Font(dataGridView1.Font, FontStyle.Bold);
+                        }
+
+                        // Apply font color from Excel cell
+                        dataCell.Style.ForeColor = Color.FromArgb(cell.Style.Font.FontColor.Color.ToArgb());
+
+                        rowData.Cells.Add(dataCell);
                     }
+
+                    dataGridView1.Rows.Add(rowData);
                 }
             }
+
+            dataGridView1.ResumeLayout();
+            dataGridView1.AutoResizeColumns();
+        }
+
+        private void ExcelPreview_Load_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            // Close the current form
+            this.Close();
+
+            // Open Form1
+            Form1 form1 = new Form1();
+            form1.Show();
         }
     }
 
@@ -139,5 +119,3 @@ namespace WinFormsApp3
         }
     }
 }
-
-

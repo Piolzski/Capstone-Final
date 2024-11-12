@@ -1034,19 +1034,21 @@ namespace WinFormsApp3
 
                 try
                 {
-                    // Retrieve the selected Clinical Instructor
-                    string selectedCI = lstClinicalInstructors.SelectedItem?.ToString()?.Trim() ?? "Unknown";
+                    // Retrieve all C.I. colors from the database once and store in a dictionary
+                    var ciColors = GetAllInstructorColorsFromDatabase();
 
-                    if (string.IsNullOrEmpty(selectedCI))
+                    // Retrieve the selected C.I.
+                    string selectedCI = lstClinicalInstructors.SelectedItem?.ToString()?.Trim() ?? "Unknown";
+                    if (string.IsNullOrEmpty(selectedCI) || !ciColors.ContainsKey(selectedCI))
                     {
-                        MessageBox.Show("No Clinical Instructor selected.");
+                        MessageBox.Show("No Clinical Instructor selected or color not found in database.");
                         return;
                     }
 
-                    // Retrieve the C.I.'s colors from the database (background and text color)
-                    var (backgroundColor, _) = GetInstructorColorsFromDatabase(selectedCI);
+                    // Get selected C.I.'s background color
+                    var backgroundColor = ciColors[selectedCI].backgroundColor;
 
-                    // Define the base columns for each timeshift
+                    // Define base columns for each timeshift
                     Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {
             { "7am to 3pm", 2 },
@@ -1057,15 +1059,10 @@ namespace WinFormsApp3
                     // Retrieve selected year levels, timeshifts, number of weeks, and specific weeks
                     var selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().Select(s => s.Trim().ToLowerInvariant()).ToArray();
                     var selectedTimeshifts = lstTimeShifts.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
-
-                    // Number of consecutive weeks
                     int numberOfWeeks = int.TryParse(txtNumberOfWeeks.Text, out int parsedWeeks) ? parsedWeeks : 0;
-
-                    // Parse specific weeks from input, e.g., "3,6,9"
                     var specifiedWeeks = textBoxSpecifiedWeeks.Text.Split(',')
                                               .Select(s => int.TryParse(s.Trim(), out int week) ? week : -1)
-                                              .Where(w => w > 0)
-                                              .ToList();
+                                              .Where(w => w > 0).ToList();
 
                     if (selectedYearLevels.Length == 0 || selectedTimeshifts.Length == 0 || (numberOfWeeks == 0 && specifiedWeeks.Count == 0))
                     {
@@ -1102,44 +1099,15 @@ namespace WinFormsApp3
 
                             int timeshiftColumn = baseTimeshiftColumns[timeshift];
 
-                            // First, clear areas for the consecutive weeks (from week 1 up to the specified number of weeks)
-                            for (int week = 1; week <= numberOfWeeks; week++)
-                            {
-                                int weekOffset = (week - 1) * 3;
-                                int targetColumn = timeshiftColumn + weekOffset;
+                            // Clear consecutive weeks
+                            ClearCellsForWeeks(worksheet, startingRowForYearLevel, timeshiftColumn, numberOfWeeks, backgroundColor);
 
-                                for (int groupNumber = 1; groupNumber <= 10; groupNumber++) // Assuming 10 groups
-                                {
-                                    int targetRow = startingRowForYearLevel + groupNumber - 1;
-
-                                    var cell = worksheet.Cell(targetRow, targetColumn);
-
-                                    // Clear cell only if it matches the selected C.I.'s background color
-                                    if (cell.Style.Fill.BackgroundColor == backgroundColor)
-                                    {
-                                        cell.Clear();
-                                    }
-                                }
-                            }
-
-                            // Then, clear areas for specific weeks if they aren't already included in the consecutive range
+                            // Clear specific weeks if they aren't already in the consecutive range
                             foreach (int week in specifiedWeeks.Where(w => w > numberOfWeeks))
                             {
                                 int weekOffset = (week - 1) * 3;
                                 int targetColumn = timeshiftColumn + weekOffset;
-
-                                for (int groupNumber = 1; groupNumber <= 10; groupNumber++) // Assuming 10 groups
-                                {
-                                    int targetRow = startingRowForYearLevel + groupNumber - 1;
-
-                                    var cell = worksheet.Cell(targetRow, targetColumn);
-
-                                    // Clear cell only if it matches the selected C.I.'s background color
-                                    if (cell.Style.Fill.BackgroundColor == backgroundColor)
-                                    {
-                                        cell.Clear();
-                                    }
-                                }
+                                ClearCellsForSingleWeek(worksheet, startingRowForYearLevel, targetColumn, backgroundColor);
                             }
                         }
                     }
@@ -1157,48 +1125,37 @@ namespace WinFormsApp3
                 ClearSelections();
             }
 
-            // Function to retrieve colors from the database
-            (XLColor backgroundColor, XLColor textColor) GetInstructorColorsFromDatabase(string instructorName)
+            // Batch retrieve all Clinical Instructor colors from the database
+            Dictionary<string, (XLColor backgroundColor, XLColor textColor)> GetAllInstructorColorsFromDatabase()
             {
-                string backgroundColorName = "";
-                string textColorName = "";
-
-                // SQL connection and query to retrieve the background and text colors
+                var colors = new Dictionary<string, (XLColor, XLColor)>(StringComparer.OrdinalIgnoreCase);
                 string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;";
-                string query = "SELECT backgroundColor, textColor FROM ClinicalInstructors WHERE InstructorName = @InstructorName";
+                string query = "SELECT InstructorName, backgroundColor, textColor FROM ClinicalInstructors";
 
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
                     conn.Open();
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@InstructorName", instructorName);
-
-                        // Execute the query and retrieve the colors
                         using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            if (reader.Read())
+                            while (reader.Read())
                             {
-                                backgroundColorName = reader["backgroundColor"]?.ToString() ?? "NoColor";
-                                textColorName = reader["textColor"]?.ToString() ?? "Black";
-                            }
-                            else
-                            {
-                                MessageBox.Show($"No colors found for the Clinical Instructor: {instructorName}");
-                                return (XLColor.NoColor, XLColor.Black);
+                                string instructorName = reader["InstructorName"].ToString() ?? "Unknown";
+                                string backgroundColorName = reader["backgroundColor"]?.ToString() ?? "NoColor";
+                                string textColorName = reader["textColor"]?.ToString() ?? "Black";
+                                colors[instructorName] = (MapColorNameToXLColor(backgroundColorName), MapColorNameToXLColor(textColorName));
                             }
                         }
                     }
                 }
-
-                // Map the color names to XLColor for ClosedXML
-                return (MapColorNameToXLColor(backgroundColorName), MapColorNameToXLColor(textColorName));
+                return colors;
             }
 
-            // Helper function to map color names from the database to XLColor
+            // Map color names to XLColor for ClosedXML
             XLColor MapColorNameToXLColor(string colorName)
             {
-                return colorName?.ToLower() switch
+                return colorName.ToLower() switch
                 {
                     "red" => XLColor.Red,
                     "blue" => XLColor.Blue,
@@ -1211,6 +1168,42 @@ namespace WinFormsApp3
                     "violet" => XLColor.Violet,
                     _ => XLColor.NoColor
                 };
+            }
+
+            // Clear cells for consecutive weeks
+            void ClearCellsForWeeks(IXLWorksheet worksheet, int startRow, int timeshiftColumn, int numberOfWeeks, XLColor backgroundColor)
+            {
+                for (int week = 1; week <= numberOfWeeks; week++)
+                {
+                    int weekOffset = (week - 1) * 3;
+                    int targetColumn = timeshiftColumn + weekOffset;
+
+                    for (int groupNumber = 1; groupNumber <= 10; groupNumber++) // Assuming 10 groups
+                    {
+                        int targetRow = startRow + groupNumber - 1;
+                        var cell = worksheet.Cell(targetRow, targetColumn);
+
+                        if (cell.Style.Fill.BackgroundColor == backgroundColor)
+                        {
+                            cell.Clear();
+                        }
+                    }
+                }
+            }
+
+            // Clear cells for a specific week
+            void ClearCellsForSingleWeek(IXLWorksheet worksheet, int startRow, int targetColumn, XLColor backgroundColor)
+            {
+                for (int groupNumber = 1; groupNumber <= 10; groupNumber++)
+                {
+                    int targetRow = startRow + groupNumber - 1;
+                    var cell = worksheet.Cell(targetRow, targetColumn);
+
+                    if (cell.Style.Fill.BackgroundColor == backgroundColor)
+                    {
+                        cell.Clear();
+                    }
+                }
             }
 
             // Helper function to clear selections and reset inputs
@@ -1229,6 +1222,7 @@ namespace WinFormsApp3
                 groupbox3.Text = string.Empty;
                 groupbox4.Text = string.Empty;
             }
+
 
 
 
@@ -1467,6 +1461,19 @@ namespace WinFormsApp3
 
         private void label17_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            // Close or hide the current form
+            this.Hide();
+
+            // Instantiate the ExcelPreview form
+            ExcelPreview ExcelPreviewForm = new ExcelPreview();
+
+            // Show the ExcelPreview form
+            ExcelPreviewForm.Show();
 
         }
     }
