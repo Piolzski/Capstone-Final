@@ -81,7 +81,6 @@
             checklistboxExclude = new CheckedListBox();
             panel5 = new Panel();
             label17 = new Label();
-            button9 = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -443,7 +442,6 @@
             // 
             panel1.BackColor = Color.DarkOrange;
             panel1.BorderStyle = BorderStyle.Fixed3D;
-            panel1.Controls.Add(button9);
             panel1.Controls.Add(pictureBox2);
             panel1.Controls.Add(pictureBox1);
             panel1.Controls.Add(button1);
@@ -696,20 +694,6 @@
             label17.Text = "Week Excluder";
             label17.Click += label17_Click;
             // 
-            // button9
-            // 
-            button9.BackColor = Color.Gold;
-            button9.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button9.ForeColor = Color.White;
-            button9.Location = new Point(16, 826);
-            button9.Margin = new Padding(3, 4, 3, 4);
-            button9.Name = "button9";
-            button9.Size = new Size(214, 91);
-            button9.TabIndex = 46;
-            button9.Text = "Preview";
-            button9.UseVisualStyleBackColor = false;
-            button9.Click += button9_Click;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -798,6 +782,5 @@
         private PictureBox pictureBox2;
         private Label label18;
         private TextBox textBoxSpecifiedWeeks;
-        private Button button9;
     }
 }
