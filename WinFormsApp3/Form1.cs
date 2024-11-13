@@ -546,7 +546,7 @@ namespace WinFormsApp3
                     }
 
                     // Retrieve the C.I.'s colors from the database (background and text color)
-                    var (backgroundColor, textColor) = GetInstructorColorsFromDatabase(selectedCI);
+                    var (backgroundColor, fontColor) = GetInstructorColorsFromDatabase(selectedCI);
 
                     // Retrieve the number of groups from the textboxes
                     int groupsIn2ndYear = int.TryParse(groupbox2.Text, out int g2) ? g2 : 0;
@@ -772,9 +772,11 @@ namespace WinFormsApp3
                                         int randomAreaIndex = random.Next(selectedAreas.Length);
                                         string areaToAssign = selectedAreas[randomAreaIndex];
 
+                                        // Set cell value, background color, and font color
                                         worksheet.Cell(targetRow, targetColumn).Value = areaToAssign;
                                         worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-                                        worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor);
+                                        worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor); // Background color
+                                        worksheet.Cell(targetRow, targetColumn).Style.Font.FontColor = fontColor;               // Font color
 
                                         // Mark this week as assigned for the current year level and timeshift
                                         assignedWeeks[(yearLevelInt, timeshift)].Add(week);
@@ -859,13 +861,13 @@ namespace WinFormsApp3
                                 worksheet.Cell(targetRow, finalColumnFor16hrShift).Value = areaToAssign;
                                 worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
                                 worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Fill.SetBackgroundColor(backgroundColor);
+                                worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Font.FontColor = fontColor; // Font color for 16-hour shift
 
                                 // Mark this group as assigned globally for the 16-hour shift
                                 globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)].Add(groupToAssign);
                             }
                         }
                     }
-
 
                     // Save the workbook
                     workbook.SaveAs(filePath);
@@ -887,16 +889,10 @@ namespace WinFormsApp3
                 groupbox2.Text = string.Empty;
                 groupbox3.Text = string.Empty;
                 groupbox4.Text = string.Empty;
-
             }
 
-
-
-
-
-
-            // Function to retrieve background and text color from the database
-            (XLColor backgroundColor, XLColor textColor) GetInstructorColorsFromDatabase(string instructorName)
+            // Function to retrieve background and font (text) color from the database
+            (XLColor backgroundColor, XLColor fontColor) GetInstructorColorsFromDatabase(string instructorName)
             {
                 string backgroundColorName = "";
                 string textColorName = "";
@@ -910,7 +906,7 @@ namespace WinFormsApp3
                     conn.Open();
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@instructorName", instructorName);
+                        cmd.Parameters.AddWithValue("@InstructorName", instructorName);
 
                         // Execute the query and retrieve the colors
                         using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -923,18 +919,17 @@ namespace WinFormsApp3
                             else
                             {
                                 MessageBox.Show($"No colors found for the Clinical Instructor: {instructorName}");
-                                return (XLColor.NoColor, XLColor.Black); // Default to no color and black text if not found
+                                return (XLColor.NoColor, XLColor.Black); // Default to no color and black font color if not found
                             }
                         }
                     }
                 }
-                // line 948 to line 1056 is to be fixed later 
 
                 // Map the color names to XLColor for ClosedXML
                 XLColor backgroundColor = MapColorNameToXLColor(backgroundColorName);
-                XLColor textColor = MapColorNameToXLColor(textColorName);
+                XLColor fontColor = MapColorNameToXLColor(textColorName);
 
-                return (backgroundColor, textColor);
+                return (backgroundColor, fontColor);
             }
 
             // Helper function to map color names from the database to XLColor
@@ -963,11 +958,10 @@ namespace WinFormsApp3
                     // Add more colors as needed
                     default:
                         return XLColor.NoColor; // Default to no color if not recognized
-
-
-
                 }
             }
+
+
         }
 
 
@@ -1044,7 +1038,7 @@ namespace WinFormsApp3
                     }
 
                     // Retrieve the C.I.'s colors from the database (background and text color)
-                    var (backgroundColor, _) = GetInstructorColorsFromDatabase(selectedCI);
+                    var (backgroundColor, fontColor) = GetInstructorColorsFromDatabase(selectedCI);
 
                     // Define the base columns for each timeshift
                     Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
@@ -1114,8 +1108,8 @@ namespace WinFormsApp3
 
                                     var cell = worksheet.Cell(targetRow, targetColumn);
 
-                                    // Clear cell only if it matches the selected C.I.'s background color
-                                    if (cell.Style.Fill.BackgroundColor == backgroundColor)
+                                    // Clear cell only if it matches the selected C.I.'s background color and font color
+                                    if (cell.Style.Fill.BackgroundColor == backgroundColor && cell.Style.Font.FontColor == fontColor)
                                     {
                                         cell.Clear();
                                     }
@@ -1134,8 +1128,8 @@ namespace WinFormsApp3
 
                                     var cell = worksheet.Cell(targetRow, targetColumn);
 
-                                    // Clear cell only if it matches the selected C.I.'s background color
-                                    if (cell.Style.Fill.BackgroundColor == backgroundColor)
+                                    // Clear cell only if it matches the selected C.I.'s background color and font color
+                                    if (cell.Style.Fill.BackgroundColor == backgroundColor && cell.Style.Font.FontColor == fontColor)
                                     {
                                         cell.Clear();
                                     }
@@ -1158,7 +1152,7 @@ namespace WinFormsApp3
             }
 
             // Function to retrieve colors from the database
-            (XLColor backgroundColor, XLColor textColor) GetInstructorColorsFromDatabase(string instructorName)
+            (XLColor backgroundColor, XLColor fontColor) GetInstructorColorsFromDatabase(string instructorName)
             {
                 string backgroundColorName = "";
                 string textColorName = "";
@@ -1229,6 +1223,7 @@ namespace WinFormsApp3
                 groupbox3.Text = string.Empty;
                 groupbox4.Text = string.Empty;
             }
+
 
 
 
@@ -1467,6 +1462,22 @@ namespace WinFormsApp3
 
         private void label17_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            // Hide the current form (if needed)
+            this.Hide();
+
+            // Instantiate the ExcelPreview form
+            ExcelPreview excelPreviewForm = new ExcelPreview();
+
+            // Show the ExcelPreview form
+            excelPreviewForm.Show();
+
+            // Optionally, handle the FormClosed event to close the current form when ExcelPreview is closed
+            excelPreviewForm.FormClosed += (s, args) => this.Close();
 
         }
     }

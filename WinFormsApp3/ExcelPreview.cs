@@ -91,6 +91,18 @@ namespace WinFormsApp3
             dataGridView1.ResumeLayout();
             dataGridView1.AutoResizeColumns();
         }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            // Instantiate Form1
+            Form1 form1 = new Form1();
+
+            // Show Form1
+            form1.Show();
+
+            // Close or hide the current form
+            this.Hide(); // Or use this.Hide() if you want to keep this form open in the background
+        }
     }
     // altered to closedxml
     // Extension method to enable double buffering in DataGridView

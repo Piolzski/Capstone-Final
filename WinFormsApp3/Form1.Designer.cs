@@ -62,6 +62,7 @@
             label13 = new Label();
             btnClinicalinstructor = new Button();
             panel1 = new Panel();
+            button9 = new Button();
             pictureBox2 = new PictureBox();
             pictureBox1 = new PictureBox();
             panel3 = new Panel();
@@ -442,6 +443,7 @@
             // 
             panel1.BackColor = Color.DarkOrange;
             panel1.BorderStyle = BorderStyle.Fixed3D;
+            panel1.Controls.Add(button9);
             panel1.Controls.Add(pictureBox2);
             panel1.Controls.Add(pictureBox1);
             panel1.Controls.Add(button1);
@@ -455,6 +457,20 @@
             panel1.Size = new Size(250, 1033);
             panel1.TabIndex = 39;
             panel1.Paint += panel1_Paint;
+            // 
+            // button9
+            // 
+            button9.BackColor = Color.Yellow;
+            button9.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button9.ForeColor = Color.White;
+            button9.Location = new Point(16, 826);
+            button9.Margin = new Padding(3, 4, 3, 4);
+            button9.Name = "button9";
+            button9.Size = new Size(214, 91);
+            button9.TabIndex = 46;
+            button9.Text = "Excel Preview";
+            button9.UseVisualStyleBackColor = false;
+            button9.Click += button9_Click;
             // 
             // pictureBox2
             // 
@@ -782,5 +798,6 @@
         private PictureBox pictureBox2;
         private Label label18;
         private TextBox textBoxSpecifiedWeeks;
+        private Button button9;
     }
 }
