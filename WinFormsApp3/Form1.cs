@@ -614,8 +614,8 @@ namespace WinFormsApp3
                     // Initialize random number generator
                     Random random = new Random();
 
-                    // Function to find the last week for the specific Clinical Instructor (based on color coding)
-                    int GetLastWeekForCIBasedOnColor(XLColor ciColor)
+                    // Function to find the last week for the specific Clinical Instructor (based on both color coding and white background)
+                    int GetLastWeekForCIBasedOnColor(XLColor ciBackgroundColor, XLColor ciFontColor)
                     {
                         int lastWeek = 0;
 
@@ -642,8 +642,10 @@ namespace WinFormsApp3
                                     {
                                         int targetRow = startingRowForYearLevel + groupNumber - 1;
 
-                                        // Check if the current cell matches the C.I.'s color
-                                        if (worksheet.Cell(targetRow, targetColumn).Style.Fill.BackgroundColor == ciColor)
+                                        // Check if the current cell matches the C.I.'s font color and is white background
+                                        if ((worksheet.Cell(targetRow, targetColumn).Style.Fill.BackgroundColor == ciBackgroundColor ||
+                                             (ciBackgroundColor == XLColor.White && worksheet.Cell(targetRow, targetColumn).Style.Fill.BackgroundColor == XLColor.NoColor)) &&
+                                            worksheet.Cell(targetRow, targetColumn).Style.Font.FontColor == ciFontColor)
                                         {
                                             isWeekFilledForCI = true;
                                             break;
@@ -662,11 +664,13 @@ namespace WinFormsApp3
                         return lastWeek;
                     }
 
+                    // Use the modified function to get the last week for the selected C.I. based on both background and font colors
+                    int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor, fontColor);
+
+
                     // Global tracking dictionary to avoid conflicts across C.I.s
                     var globalGroupAssignments = new Dictionary<(int yearLevel, string timeshift, int week), HashSet<int>>();
 
-                    // Get the last week for the selected C.I. using its color from the database
-                    int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor);
 
                     // Retrieve weeks to exclude from the week excluder checklistbox
                     var excludedWeeks = new HashSet<int>(
