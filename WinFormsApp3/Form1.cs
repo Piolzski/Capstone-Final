@@ -960,6 +960,8 @@ namespace WinFormsApp3
                     case "violet":
                         return XLColor.Violet;
                     // Add more colors as needed
+                    case "white":
+                        return XLColor.White;
                     default:
                         return XLColor.NoColor; // Default to no color if not recognized
                 }
