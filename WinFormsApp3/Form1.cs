@@ -904,13 +904,12 @@ namespace WinFormsApp3
                 groupbox4.Text = string.Empty;
             }
 
-            // Function to retrieve background and font (text) color from the database
+            // Function to map and validate colors for both background and font
             (XLColor backgroundColor, XLColor fontColor) GetInstructorColorsFromDatabase(string instructorName)
             {
                 string backgroundColorName = "";
                 string textColorName = "";
 
-                // SQLite connection and query to retrieve the background and text colors
                 string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
                 string query = "SELECT backgroundColor, textColor FROM clinicalinstructors WHERE InstructorName = @InstructorName";
 
@@ -919,119 +918,82 @@ namespace WinFormsApp3
                     conn.Open();
                     using (SQLiteCommand cmd = new SQLiteCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@InstructorName", instructorName);
+                        cmd.Parameters.AddWithValue("@InstructorName", instructorName.Trim());
 
-                        // Execute the query and retrieve the colors
                         using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
-                                backgroundColorName = reader["backgroundColor"]?.ToString() ?? "NoColor"; // Use default "NoColor"
-                                textColorName = reader["textColor"]?.ToString() ?? "Black"; // Default to "Black"
+                                // Retrieve color names from the database
+                                backgroundColorName = reader["backgroundColor"]?.ToString()?.Trim() ?? "NoColor";
+                                textColorName = reader["textColor"]?.ToString()?.Trim() ?? "Black";
                             }
                             else
                             {
+                                // Fallback if no colors are found
                                 MessageBox.Show($"No colors found for the Clinical Instructor: {instructorName}");
-                                return (XLColor.NoColor, XLColor.Black); // Default to no color and black font color if not found
+                                return (XLColor.NoColor, XLColor.Black);
                             }
                         }
                     }
                 }
 
-                // Map the color names to XLColor for ClosedXML
+                // Map the colors dynamically using the MapColorNameToXLColor function
                 XLColor backgroundColor = MapColorNameToXLColor(backgroundColorName);
                 XLColor fontColor = MapColorNameToXLColor(textColorName);
 
+
+                // Validate both colors and handle invalid entries
+                if (backgroundColor == XLColor.NoColor)
+                {
+                    MessageBox.Show($"Invalid background color: {backgroundColorName}. Defaulting to NoColor.");
+                }
+
+                if (fontColor == XLColor.NoColor)
+                {
+                    MessageBox.Show($"Invalid font color: {textColorName}. Defaulting to Black.");
+                }
+
+                // Return validated colors
                 return (backgroundColor, fontColor);
             }
-
-            // Helper function to map color names from the database to XLColor
             XLColor MapColorNameToXLColor(string colorName)
             {
-                switch (colorName?.ToLower()) // Ensure colorName is not null
+                if (string.IsNullOrWhiteSpace(colorName)) return XLColor.NoColor;
+
+                // Trim spaces and ensure case-insensitive matching
+                colorName = colorName.Trim().ToLower();
+
+                // Use a dictionary of predefined colors
+                var xlColors = typeof(XLColor)
+                    .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                    .Where(p => p.PropertyType == typeof(XLColor))
+                    .ToDictionary(p => p.Name.ToLower(), p => (XLColor)p.GetValue(null)!);
+
+                if (xlColors.TryGetValue(colorName, out var xlColor)) return xlColor;
+
+                // Handle hex and RGB colors
+                if (colorName.StartsWith("#"))
                 {
-                    case "red":
-                        return XLColor.Red;
-                    case "blue":
-                        return XLColor.Blue;
-                    case "green":
-                        return XLColor.Green;
-                    case "yellow":
-                        return XLColor.Yellow;
-                    case "pink":
-                        return XLColor.Pink;
-                    case "brown":
-                        return XLColor.Brown;
-                    case "gray":
-                        return XLColor.Gray;
-                    case "orange":
-                        return XLColor.Orange;
-                    case "violet":
-                        return XLColor.Violet;
-                    case "black":
-                        return XLColor.Black;
-                    case "white":
-                        return XLColor.White;
-                    case "cyan":
-                        return XLColor.Cyan;
-                    case "magenta":
-                        return XLColor.Magenta;
-                    case "gold":
-                        return XLColor.Gold;
-                    case "silver":
-                        return XLColor.Silver;
-                    case "lightblue":
-                        return XLColor.LightBlue;
-                    case "lightgreen":
-                        return XLColor.LightGreen;
-                    case "lightyellow":
-                        return XLColor.LightYellow;
-                    case "lightpink":
-                        return XLColor.LightPink;
-                    case "lightgray":
-                        return XLColor.LightGray;
-                    case "darkred":
-                        return XLColor.DarkRed;
-                    case "darkblue":
-                        return XLColor.DarkBlue;
-                    case "darkgreen":
-                        return XLColor.DarkGreen;
-                    case "darkpink":
-                        return XLColor.DarkPink;
-                    case "darkbrown":
-                        return XLColor.DarkBrown;
-                    case "darkgray":
-                        return XLColor.DarkGray;
-                    case "purple":
-                        return XLColor.Purple;
-                    case "teal":
-                        return XLColor.Teal;
-                    case "turquoise":
-                        return XLColor.Turquoise;
-                    case "indigo":
-                        return XLColor.Indigo;
-                    case "lime":
-                        return XLColor.Lime;
-                    case "navy":
-                        return XLColor.Navy;
-                    case "maroon":
-                        return XLColor.Maroon;
-                    case "olive":
-                        return XLColor.Olive;
-                    case "plum":
-                        return XLColor.Plum;
-                    case "salmon":
-                        return XLColor.Salmon;
-                    case "skyblue":
-                        return XLColor.SkyBlue;
-                    case "tan":
-                        return XLColor.Tan;
-                    case "wheat":
-                        return XLColor.Wheat;
-                    default:
-                        return XLColor.NoColor; // Default to no color if not recognized
+                    try { return XLColor.FromHtml(colorName); } catch { return XLColor.NoColor; }
                 }
+
+                if (colorName.Contains(","))
+                {
+                    try
+                    {
+                        var rgb = colorName.Split(',').Select(int.Parse).ToArray();
+                        return XLColor.FromArgb(rgb[0], rgb[1], rgb[2]);
+                    }
+                    catch { return XLColor.NoColor; }
+                }
+
+                // Default to NoColor if unrecognized
+                return XLColor.NoColor;
             }
+
+
+
 
 
 
@@ -1224,13 +1186,11 @@ namespace WinFormsApp3
                 ClearSelections();
             }
 
-            // Function to retrieve colors from the database
             (XLColor backgroundColor, XLColor fontColor) GetInstructorColorsFromDatabase(string instructorName)
             {
                 string backgroundColorName = "";
                 string textColorName = "";
 
-                // SQLite connection and query to retrieve the background and text colors
                 string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
                 string query = "SELECT backgroundColor, textColor FROM clinicalinstructors WHERE InstructorName = @InstructorName";
 
@@ -1239,115 +1199,88 @@ namespace WinFormsApp3
                     conn.Open();
                     using (SQLiteCommand cmd = new SQLiteCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@InstructorName", instructorName);
+                        cmd.Parameters.AddWithValue("@InstructorName", instructorName.Trim());
 
-                        // Execute the query and retrieve the colors
                         using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
+                                // Retrieve color names from the database
                                 backgroundColorName = reader["backgroundColor"]?.ToString() ?? "NoColor";
                                 textColorName = reader["textColor"]?.ToString() ?? "Black";
                             }
                             else
                             {
                                 MessageBox.Show($"No colors found for the Clinical Instructor: {instructorName}");
-                                return (XLColor.NoColor, XLColor.Black);
+                                return (XLColor.NoColor, XLColor.Black); // Default values if not found
                             }
                         }
                     }
                 }
 
-                // Map the color names to XLColor for ClosedXML
-                return (MapColorNameToXLColor(backgroundColorName), MapColorNameToXLColor(textColorName));
+                // Validate both colors
+                XLColor backgroundColor = MapColorNameToXLColor(backgroundColorName);
+                XLColor fontColor = MapColorNameToXLColor(textColorName);
+
+                // Check if either color is invalid and display an appropriate message
+                if (backgroundColor == XLColor.NoColor)
+                {
+                    MessageBox.Show($"Invalid background color: {backgroundColorName}. Defaulting to NoColor.");
+                }
+
+                if (fontColor == XLColor.NoColor)
+                {
+                    MessageBox.Show($"Invalid font color: {textColorName}. Defaulting to Black.");
+                }
+
+                return (backgroundColor, fontColor);
             }
 
             XLColor MapColorNameToXLColor(string colorName)
             {
-                switch (colorName?.ToLower()) // Ensure colorName is not null
+                // Get all predefined XLColor properties dynamically
+                var xlColors = typeof(XLColor)
+                    .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                    .Where(p => p.PropertyType == typeof(XLColor)) // Ensure it's an XLColor property
+                    .ToDictionary(p => p.Name.ToLower(), p => (XLColor)p.GetValue(null)!); // Create a dictionary: name -> XLColor
+
+                if (colorName == null)
+                    return XLColor.NoColor; // Default to NoColor if colorName is null
+
+                // Attempt to match the colorName with an XLColor
+                if (xlColors.TryGetValue(colorName.ToLower(), out var xlColor))
+                    return xlColor;
+
+                // Handle cases for RGB or Hex color codes (e.g., "#FF8040" or "255,128,64")
+                if (colorName.StartsWith("#"))
                 {
-                    case "red":
-                        return XLColor.Red;
-                    case "blue":
-                        return XLColor.Blue;
-                    case "green":
-                        return XLColor.Green;
-                    case "yellow":
-                        return XLColor.Yellow;
-                    case "pink":
-                        return XLColor.Pink;
-                    case "brown":
-                        return XLColor.Brown;
-                    case "gray":
-                        return XLColor.Gray;
-                    case "orange":
-                        return XLColor.Orange;
-                    case "violet":
-                        return XLColor.Violet;
-                    case "black":
-                        return XLColor.Black;
-                    case "white":
-                        return XLColor.White;
-                    case "cyan":
-                        return XLColor.Cyan;
-                    case "magenta":
-                        return XLColor.Magenta;
-                    case "gold":
-                        return XLColor.Gold;
-                    case "silver":
-                        return XLColor.Silver;
-                    case "lightblue":
-                        return XLColor.LightBlue;
-                    case "lightgreen":
-                        return XLColor.LightGreen;
-                    case "lightyellow":
-                        return XLColor.LightYellow;
-                    case "lightpink":
-                        return XLColor.LightPink;
-                    case "lightgray":
-                        return XLColor.LightGray;
-                    case "darkred":
-                        return XLColor.DarkRed;
-                    case "darkblue":
-                        return XLColor.DarkBlue;
-                    case "darkgreen":
-                        return XLColor.DarkGreen;
-                    case "darkpink":
-                        return XLColor.DarkPink;
-                    case "darkbrown":
-                        return XLColor.DarkBrown;
-                    case "darkgray":
-                        return XLColor.DarkGray;
-                    case "purple":
-                        return XLColor.Purple;
-                    case "teal":
-                        return XLColor.Teal;
-                    case "turquoise":
-                        return XLColor.Turquoise;
-                    case "indigo":
-                        return XLColor.Indigo;
-                    case "lime":
-                        return XLColor.Lime;
-                    case "navy":
-                        return XLColor.Navy;
-                    case "maroon":
-                        return XLColor.Maroon;
-                    case "olive":
-                        return XLColor.Olive;
-                    case "plum":
-                        return XLColor.Plum;
-                    case "salmon":
-                        return XLColor.Salmon;
-                    case "skyblue":
-                        return XLColor.SkyBlue;
-                    case "tan":
-                        return XLColor.Tan;
-                    case "wheat":
-                        return XLColor.Wheat;
-                    default:
-                        return XLColor.NoColor; // Default to no color if not recognized
+                    try
+                    {
+                        return XLColor.FromHtml(colorName); // For hex color codes
+                    }
+                    catch
+                    {
+                        return XLColor.NoColor; // Return NoColor if invalid hex
+                    }
                 }
+
+                if (colorName.Contains(","))
+                {
+                    try
+                    {
+                        var rgb = colorName.Split(',').Select(int.Parse).ToArray();
+                        return XLColor.FromArgb(rgb[0], rgb[1], rgb[2]); // For RGB values
+                    }
+                    catch
+                    {
+                        return XLColor.NoColor; // Return NoColor if invalid RGB
+                    }
+                }
+
+                // Default to NoColor if not recognized
+                return XLColor.NoColor;
             }
+
 
 
             // Helper function to clear selections and reset inputs
