@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ClosedXML.Excel;
 using MySql.Data.MySqlClient;
+using System.Data.SQLite;
 
 namespace WinFormsApp3
 {
@@ -48,18 +49,18 @@ namespace WinFormsApp3
 
         private void LoadClinicalInstructors()
         {
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;Pwd=;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT InstructorName FROM ClinicalInstructors";
+                    string query = "SELECT InstructorName FROM clinicalinstructors";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
                     {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
@@ -79,18 +80,18 @@ namespace WinFormsApp3
 
         private void LoadYearLevels()
         {
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;Pwd=;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT YearLevel FROM YearLevels";
+                    string query = "SELECT YearLevel FROM yearlevels";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
                     {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
@@ -105,25 +106,26 @@ namespace WinFormsApp3
             {
                 MessageBox.Show("An error occurred while loading year levels: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
         }
 
 
         private void LoadDepartments()
         {
 
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;Pwd=;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
             string query = "SELECT DepartmentName FROM hospitaldepartments"; // Correctly targeting the DepartmentName column
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
                     {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
-                            listBox1.Items.Clear(); // Clear the existing items in the listbox to avoid duplicates
+                            listBox1.Items.Clear(); // Clear the existing items in the ListBox to avoid duplicates
 
                             while (reader.Read())
                             {
@@ -143,6 +145,7 @@ namespace WinFormsApp3
             {
                 MessageBox.Show("An error occurred while loading departments: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
         }
 
 
@@ -150,20 +153,20 @@ namespace WinFormsApp3
 
         private void LoadGroups()
         {
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;Pwd=;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT GroupNumber FROM Groups";  // Assuming 'Groups' is the table name
+                    string query = "SELECT GroupNumber FROM groups"; // Assuming 'groups' is the table name
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
                     {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
-                            // Assuming that groupbox2, groupbox3, and groupbox4 are textboxes for displaying the number of groups
+                            // Assuming groupbox2, groupbox3, and groupbox4 are textboxes
                             groupbox2.Clear();
                             groupbox3.Clear();
                             groupbox4.Clear();
@@ -175,9 +178,7 @@ namespace WinFormsApp3
 
                                 if (!string.IsNullOrEmpty(groupNumber))
                                 {
-                                    // Dynamically set the values in the textboxes based on the retrieved group numbers
-                                    // This is a placeholder logic, depending on your exact requirements
-                                    // Here, we assume you want to distribute groups evenly across textboxes
+                                    // Distribute group numbers across textboxes
                                     if (groupCount % 3 == 0)
                                         groupbox2.AppendText(groupNumber + Environment.NewLine);
                                     else if (groupCount % 3 == 1)
@@ -196,28 +197,35 @@ namespace WinFormsApp3
             {
                 MessageBox.Show("An error occurred while loading groups: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
         }
 
 
         private void LoadTimeShifts()
         {
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;;Uid=root;Pwd=;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT TimeShiftName FROM TimeShifts";  // Assuming 'TimeShifts' is the table name
+                    string query = "SELECT TimeShiftName FROM timeshifts"; // Assuming 'timeshifts' is the table name
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
                     {
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
+                            lstTimeShifts.Items.Clear(); // Clear existing items in the ListBox to avoid duplicates
+
                             while (reader.Read())
                             {
                                 string timeShiftName = reader["TimeShiftName"]?.ToString() ?? string.Empty;
-                                lstTimeShifts.Items.Add(timeShiftName);
+
+                                if (!string.IsNullOrEmpty(timeShiftName)) // Only add non-empty time shifts
+                                {
+                                    lstTimeShifts.Items.Add(timeShiftName);
+                                }
                             }
                         }
                     }
@@ -227,6 +235,7 @@ namespace WinFormsApp3
             {
                 MessageBox.Show("An error occurred while loading time shifts: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -901,19 +910,19 @@ namespace WinFormsApp3
                 string backgroundColorName = "";
                 string textColorName = "";
 
-                // SQL connection and query to retrieve the background and text colors
-                string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;"; // Replace with your actual connection string
-                string query = "SELECT backgroundColor, textColor FROM ClinicalInstructors WHERE InstructorName = @InstructorName";
+                // SQLite connection and query to retrieve the background and text colors
+                string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
+                string query = "SELECT backgroundColor, textColor FROM clinicalinstructors WHERE InstructorName = @InstructorName";
 
-                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                using (SQLiteConnection conn = new SQLiteConnection(connectionString))
                 {
                     conn.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@InstructorName", instructorName);
 
                         // Execute the query and retrieve the colors
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
@@ -959,13 +968,71 @@ namespace WinFormsApp3
                         return XLColor.Orange;
                     case "violet":
                         return XLColor.Violet;
-                    // Add more colors as needed
+                    case "black":
+                        return XLColor.Black;
                     case "white":
                         return XLColor.White;
+                    case "cyan":
+                        return XLColor.Cyan;
+                    case "magenta":
+                        return XLColor.Magenta;
+                    case "gold":
+                        return XLColor.Gold;
+                    case "silver":
+                        return XLColor.Silver;
+                    case "lightblue":
+                        return XLColor.LightBlue;
+                    case "lightgreen":
+                        return XLColor.LightGreen;
+                    case "lightyellow":
+                        return XLColor.LightYellow;
+                    case "lightpink":
+                        return XLColor.LightPink;
+                    case "lightgray":
+                        return XLColor.LightGray;
+                    case "darkred":
+                        return XLColor.DarkRed;
+                    case "darkblue":
+                        return XLColor.DarkBlue;
+                    case "darkgreen":
+                        return XLColor.DarkGreen;
+                    case "darkpink":
+                        return XLColor.DarkPink;
+                    case "darkbrown":
+                        return XLColor.DarkBrown;
+                    case "darkgray":
+                        return XLColor.DarkGray;
+                    case "purple":
+                        return XLColor.Purple;
+                    case "teal":
+                        return XLColor.Teal;
+                    case "turquoise":
+                        return XLColor.Turquoise;
+                    case "indigo":
+                        return XLColor.Indigo;
+                    case "lime":
+                        return XLColor.Lime;
+                    case "navy":
+                        return XLColor.Navy;
+                    case "maroon":
+                        return XLColor.Maroon;
+                    case "olive":
+                        return XLColor.Olive;
+                    case "plum":
+                        return XLColor.Plum;
+                    case "salmon":
+                        return XLColor.Salmon;
+                    case "skyblue":
+                        return XLColor.SkyBlue;
+                    case "tan":
+                        return XLColor.Tan;
+                    case "wheat":
+                        return XLColor.Wheat;
                     default:
                         return XLColor.NoColor; // Default to no color if not recognized
                 }
             }
+
 
 
         }
@@ -1163,19 +1230,19 @@ namespace WinFormsApp3
                 string backgroundColorName = "";
                 string textColorName = "";
 
-                // SQL connection and query to retrieve the background and text colors
-                string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;";
-                string query = "SELECT backgroundColor, textColor FROM ClinicalInstructors WHERE InstructorName = @InstructorName";
+                // SQLite connection and query to retrieve the background and text colors
+                string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
+                string query = "SELECT backgroundColor, textColor FROM clinicalinstructors WHERE InstructorName = @InstructorName";
 
-                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                using (SQLiteConnection conn = new SQLiteConnection(connectionString))
                 {
                     conn.Open();
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@InstructorName", instructorName);
 
                         // Execute the query and retrieve the colors
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
@@ -1195,23 +1262,93 @@ namespace WinFormsApp3
                 return (MapColorNameToXLColor(backgroundColorName), MapColorNameToXLColor(textColorName));
             }
 
-            // Helper function to map color names from the database to XLColor
             XLColor MapColorNameToXLColor(string colorName)
             {
-                return colorName?.ToLower() switch
+                switch (colorName?.ToLower()) // Ensure colorName is not null
                 {
-                    "red" => XLColor.Red,
-                    "blue" => XLColor.Blue,
-                    "green" => XLColor.Green,
-                    "yellow" => XLColor.Yellow,
-                    "pink" => XLColor.Pink,
-                    "brown" => XLColor.Brown,
-                    "gray" => XLColor.Gray,
-                    "orange" => XLColor.Orange,
-                    "violet" => XLColor.Violet,
-                    _ => XLColor.NoColor
-                };
+                    case "red":
+                        return XLColor.Red;
+                    case "blue":
+                        return XLColor.Blue;
+                    case "green":
+                        return XLColor.Green;
+                    case "yellow":
+                        return XLColor.Yellow;
+                    case "pink":
+                        return XLColor.Pink;
+                    case "brown":
+                        return XLColor.Brown;
+                    case "gray":
+                        return XLColor.Gray;
+                    case "orange":
+                        return XLColor.Orange;
+                    case "violet":
+                        return XLColor.Violet;
+                    case "black":
+                        return XLColor.Black;
+                    case "white":
+                        return XLColor.White;
+                    case "cyan":
+                        return XLColor.Cyan;
+                    case "magenta":
+                        return XLColor.Magenta;
+                    case "gold":
+                        return XLColor.Gold;
+                    case "silver":
+                        return XLColor.Silver;
+                    case "lightblue":
+                        return XLColor.LightBlue;
+                    case "lightgreen":
+                        return XLColor.LightGreen;
+                    case "lightyellow":
+                        return XLColor.LightYellow;
+                    case "lightpink":
+                        return XLColor.LightPink;
+                    case "lightgray":
+                        return XLColor.LightGray;
+                    case "darkred":
+                        return XLColor.DarkRed;
+                    case "darkblue":
+                        return XLColor.DarkBlue;
+                    case "darkgreen":
+                        return XLColor.DarkGreen;
+                    case "darkpink":
+                        return XLColor.DarkPink;
+                    case "darkbrown":
+                        return XLColor.DarkBrown;
+                    case "darkgray":
+                        return XLColor.DarkGray;
+                    case "purple":
+                        return XLColor.Purple;
+                    case "teal":
+                        return XLColor.Teal;
+                    case "turquoise":
+                        return XLColor.Turquoise;
+                    case "indigo":
+                        return XLColor.Indigo;
+                    case "lime":
+                        return XLColor.Lime;
+                    case "navy":
+                        return XLColor.Navy;
+                    case "maroon":
+                        return XLColor.Maroon;
+                    case "olive":
+                        return XLColor.Olive;
+                    case "plum":
+                        return XLColor.Plum;
+                    case "salmon":
+                        return XLColor.Salmon;
+                    case "skyblue":
+                        return XLColor.SkyBlue;
+                    case "tan":
+                        return XLColor.Tan;
+                    case "wheat":
+                        return XLColor.Wheat;
+                    default:
+                        return XLColor.NoColor; // Default to no color if not recognized
+                }
             }
+
 
             // Helper function to clear selections and reset inputs
             void ClearSelections()

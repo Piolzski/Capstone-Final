@@ -103,6 +103,11 @@ namespace WinFormsApp3
             // Close or hide the current form
             this.Hide(); // Or use this.Hide() if you want to keep this form open in the background
         }
+
+        private void ExcelPreview_Load_1(object sender, EventArgs e)
+        {
+
+        }
     }
     // altered to closedxml
     // Extension method to enable double buffering in DataGridView

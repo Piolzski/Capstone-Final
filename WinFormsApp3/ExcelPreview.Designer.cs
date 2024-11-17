@@ -67,6 +67,7 @@
             Controls.Add(dataGridView1);
             Name = "ExcelPreview";
             Text = "ExcelPreview";
+            Load += ExcelPreview_Load_1;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ResumeLayout(false);

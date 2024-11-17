@@ -12,6 +12,7 @@ using MySql.Data.MySqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.Eventing.Reader;
 using ClosedXML.Excel;
+using System.Data.SQLite;
 
 
 namespace WinFormsApp3
@@ -85,8 +86,7 @@ namespace WinFormsApp3
 
         private void button1_Click(object sender, EventArgs e)
         {
-        
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;"; // SQLite connection string
 
             if (string.IsNullOrWhiteSpace(textBoxName.Text) &&
                 string.IsNullOrWhiteSpace(textBoxSpec.Text) &&
@@ -106,7 +106,7 @@ namespace WinFormsApp3
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
 
@@ -114,7 +114,7 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxName.Text) || !string.IsNullOrWhiteSpace(textBoxSpec.Text))
                     {
                         string instructorInsertQuery = "INSERT INTO clinicalinstructors (InstructorName, Designation, BackgroundColor, TextColor) VALUES (@Name, @Designation, @BackgroundColor, @TextColor)";
-                        using (MySqlCommand instructorCommand = new MySqlCommand(instructorInsertQuery, connection))
+                        using (SQLiteCommand instructorCommand = new SQLiteCommand(instructorInsertQuery, connection))
                         {
                             instructorCommand.Parameters.AddWithValue("@Name", textBoxName.Text);
                             instructorCommand.Parameters.AddWithValue("@Designation", textBoxSpec.Text);
@@ -128,7 +128,7 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxTime.Text))
                     {
                         string timeshiftInsertQuery = "INSERT INTO timeshifts (TimeShiftName) VALUES (@Time)";
-                        using (MySqlCommand timeshiftCommand = new MySqlCommand(timeshiftInsertQuery, connection))
+                        using (SQLiteCommand timeshiftCommand = new SQLiteCommand(timeshiftInsertQuery, connection))
                         {
                             timeshiftCommand.Parameters.AddWithValue("@Time", textBoxTime.Text);
                             timeshiftCommand.ExecuteNonQuery();
@@ -139,7 +139,7 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxHos.Text))
                     {
                         string hospitalInsertQuery = "INSERT INTO hospitals (HospitalName) VALUES (@Hospital)";
-                        using (MySqlCommand hospitalCommand = new MySqlCommand(hospitalInsertQuery, connection))
+                        using (SQLiteCommand hospitalCommand = new SQLiteCommand(hospitalInsertQuery, connection))
                         {
                             hospitalCommand.Parameters.AddWithValue("@Hospital", textBoxHos.Text);
                             hospitalCommand.ExecuteNonQuery();
@@ -150,7 +150,7 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(TextBoxDept.Text))
                     {
                         string departmentInsertQuery = "INSERT INTO hospitaldepartments (DepartmentName) VALUES (@DepartmentName)";
-                        using (MySqlCommand departmentCommand = new MySqlCommand(departmentInsertQuery, connection))
+                        using (SQLiteCommand departmentCommand = new SQLiteCommand(departmentInsertQuery, connection))
                         {
                             departmentCommand.Parameters.AddWithValue("@DepartmentName", TextBoxDept.Text);
                             departmentCommand.ExecuteNonQuery();
@@ -161,7 +161,7 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxLVL.Text) && !string.IsNullOrWhiteSpace(textBoxLVLID.Text))
                     {
                         string yearLevelInsertQuery = "INSERT INTO yearlevels (YearLevelID, YearLevel) VALUES (@YearLevelID, @YearLevel)";
-                        using (MySqlCommand yearLevelCommand = new MySqlCommand(yearLevelInsertQuery, connection))
+                        using (SQLiteCommand yearLevelCommand = new SQLiteCommand(yearLevelInsertQuery, connection))
                         {
                             yearLevelCommand.Parameters.AddWithValue("@YearLevelID", textBoxLVLID.Text);
                             yearLevelCommand.Parameters.AddWithValue("@YearLevel", textBoxLVL.Text);
@@ -173,7 +173,7 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxgrp.Text))
                     {
                         string groupInsertQuery = "INSERT INTO groups (GroupNumber) VALUES (@GroupNumber)";
-                        using (MySqlCommand groupCommand = new MySqlCommand(groupInsertQuery, connection))
+                        using (SQLiteCommand groupCommand = new SQLiteCommand(groupInsertQuery, connection))
                         {
                             groupCommand.Parameters.AddWithValue("@GroupNumber", textBoxgrp.Text);
                             groupCommand.ExecuteNonQuery();
@@ -198,20 +198,20 @@ namespace WinFormsApp3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error connecting to database: " + ex.ToString());
+                MessageBox.Show("Error connecting to database: " + ex.Message);
             }
         }
 
 
 
 
-            private void button2_Click(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
 
             // Check if at least one text box has input
             if (string.IsNullOrWhiteSpace(textBoxName.Text) &&
@@ -227,7 +227,7 @@ namespace WinFormsApp3
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
                     bool dataFoundToDelete = false;
@@ -237,14 +237,14 @@ namespace WinFormsApp3
                     {
                         // Check and delete by ID
                         string checkInstructorQuery = "SELECT COUNT(*) FROM clinicalinstructors WHERE InstructorID = @ID";
-                        using (MySqlCommand checkCommand = new MySqlCommand(checkInstructorQuery, connection))
+                        using (SQLiteCommand checkCommand = new SQLiteCommand(checkInstructorQuery, connection))
                         {
                             checkCommand.Parameters.AddWithValue("@ID", textBoxID.Text);
                             int count = Convert.ToInt32(checkCommand.ExecuteScalar());
                             if (count > 0)
                             {
                                 string instructorDeleteQuery = "DELETE FROM clinicalinstructors WHERE InstructorID = @ID";
-                                using (MySqlCommand instructorCommand = new MySqlCommand(instructorDeleteQuery, connection))
+                                using (SQLiteCommand instructorCommand = new SQLiteCommand(instructorDeleteQuery, connection))
                                 {
                                     instructorCommand.Parameters.AddWithValue("@ID", textBoxID.Text);
                                     instructorCommand.ExecuteNonQuery();
@@ -257,14 +257,14 @@ namespace WinFormsApp3
                     {
                         // Check and delete by Name and/or Specialty
                         string checkInstructorQuery = "SELECT COUNT(*) FROM clinicalinstructors WHERE InstructorName = @Name";
-                        using (MySqlCommand checkCommand = new MySqlCommand(checkInstructorQuery, connection))
+                        using (SQLiteCommand checkCommand = new SQLiteCommand(checkInstructorQuery, connection))
                         {
                             checkCommand.Parameters.AddWithValue("@Name", textBoxName.Text);
                             int count = Convert.ToInt32(checkCommand.ExecuteScalar());
                             if (count > 0)
                             {
                                 string instructorDeleteQuery = "DELETE FROM clinicalinstructors WHERE InstructorName = @Name";
-                                using (MySqlCommand instructorCommand = new MySqlCommand(instructorDeleteQuery, connection))
+                                using (SQLiteCommand instructorCommand = new SQLiteCommand(instructorDeleteQuery, connection))
                                 {
                                     instructorCommand.Parameters.AddWithValue("@Name", textBoxName.Text);
                                     instructorCommand.ExecuteNonQuery();
@@ -278,14 +278,14 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxTime.Text))
                     {
                         string checkTimeshiftQuery = "SELECT COUNT(*) FROM timeshifts WHERE TimeShiftName = @Time";
-                        using (MySqlCommand checkCommand = new MySqlCommand(checkTimeshiftQuery, connection))
+                        using (SQLiteCommand checkCommand = new SQLiteCommand(checkTimeshiftQuery, connection))
                         {
                             checkCommand.Parameters.AddWithValue("@Time", textBoxTime.Text);
                             int count = Convert.ToInt32(checkCommand.ExecuteScalar());
                             if (count > 0)
                             {
                                 string timeshiftDeleteQuery = "DELETE FROM timeshifts WHERE TimeShiftName = @Time";
-                                using (MySqlCommand timeshiftCommand = new MySqlCommand(timeshiftDeleteQuery, connection))
+                                using (SQLiteCommand timeshiftCommand = new SQLiteCommand(timeshiftDeleteQuery, connection))
                                 {
                                     timeshiftCommand.Parameters.AddWithValue("@Time", textBoxTime.Text);
                                     timeshiftCommand.ExecuteNonQuery();
@@ -299,14 +299,14 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxHos.Text))
                     {
                         string checkHospitalQuery = "SELECT COUNT(*) FROM hospitals WHERE HospitalName = @Hospital";
-                        using (MySqlCommand checkCommand = new MySqlCommand(checkHospitalQuery, connection))
+                        using (SQLiteCommand checkCommand = new SQLiteCommand(checkHospitalQuery, connection))
                         {
                             checkCommand.Parameters.AddWithValue("@Hospital", textBoxHos.Text);
                             int count = Convert.ToInt32(checkCommand.ExecuteScalar());
                             if (count > 0)
                             {
                                 string hospitalDeleteQuery = "DELETE FROM hospitals WHERE HospitalName = @Hospital";
-                                using (MySqlCommand hospitalCommand = new MySqlCommand(hospitalDeleteQuery, connection))
+                                using (SQLiteCommand hospitalCommand = new SQLiteCommand(hospitalDeleteQuery, connection))
                                 {
                                     hospitalCommand.Parameters.AddWithValue("@Hospital", textBoxHos.Text);
                                     hospitalCommand.ExecuteNonQuery();
@@ -325,7 +325,7 @@ namespace WinFormsApp3
                         }
 
                         string checkDepartmentQuery = "SELECT COUNT(*) FROM hospitaldepartments WHERE DepartmentName = @Department AND HospitalID = @HospitalID";
-                        using (MySqlCommand checkCommand = new MySqlCommand(checkDepartmentQuery, connection))
+                        using (SQLiteCommand checkCommand = new SQLiteCommand(checkDepartmentQuery, connection))
                         {
                             checkCommand.Parameters.AddWithValue("@Department", TextBoxDept.Text);
                             checkCommand.Parameters.AddWithValue("@HospitalID", textBox1.Text);
@@ -333,7 +333,7 @@ namespace WinFormsApp3
                             if (count > 0)
                             {
                                 string departmentDeleteQuery = "DELETE FROM hospitaldepartments WHERE DepartmentName = @Department AND HospitalID = @HospitalID";
-                                using (MySqlCommand departmentCommand = new MySqlCommand(departmentDeleteQuery, connection))
+                                using (SQLiteCommand departmentCommand = new SQLiteCommand(departmentDeleteQuery, connection))
                                 {
                                     departmentCommand.Parameters.AddWithValue("@Department", TextBoxDept.Text);
                                     departmentCommand.Parameters.AddWithValue("@HospitalID", textBox1.Text);
@@ -347,12 +347,12 @@ namespace WinFormsApp3
                     if (!dataFoundToDelete)
                     {
                         MessageBox.Show("No matching records found to delete.");
-
                     }
                     else
                     {
                         MessageBox.Show("Data deleted successfully!");
                     }
+
                     // Clear text boxes
                     textBoxName.Clear();
                     textBoxSpec.Clear();
@@ -361,7 +361,6 @@ namespace WinFormsApp3
                     TextBoxDept.Clear();
                     textBoxID.Clear();
                     textBox1.Clear();
-                   
                 }
             }
             catch (Exception ex)
@@ -370,9 +369,10 @@ namespace WinFormsApp3
             }
         }
 
+
         private void button4_Click(object sender, EventArgs e)
         {
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;";
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
 
             // Check if at least one text box has input
             if (string.IsNullOrWhiteSpace(textBoxName.Text) &&
@@ -385,11 +385,9 @@ namespace WinFormsApp3
                 return;
             }
 
-     
-
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
 
@@ -419,7 +417,7 @@ namespace WinFormsApp3
 
                         instructorUpdateQuery += " WHERE InstructorID = @ID";
 
-                        using (MySqlCommand instructorCommand = new MySqlCommand(instructorUpdateQuery, connection))
+                        using (SQLiteCommand instructorCommand = new SQLiteCommand(instructorUpdateQuery, connection))
                         {
                             instructorCommand.Parameters.AddWithValue("@ID", textBoxID.Text); // Assuming textBoxID contains the instructor's ID
                             instructorCommand.Parameters.AddWithValue("@Name", textBoxName.Text);
@@ -445,14 +443,12 @@ namespace WinFormsApp3
                             instructorCommand.ExecuteNonQuery();
                         }
                     }
-                
-
 
                     // Update data for time shifts if textbox has value
                     if (!string.IsNullOrWhiteSpace(textBoxTime.Text))
                     {
                         string timeshiftUpdateQuery = "UPDATE timeshifts SET TimeShiftName = @Time WHERE HospitalID = @HospitalID";
-                        using (MySqlCommand timeshiftCommand = new MySqlCommand(timeshiftUpdateQuery, connection))
+                        using (SQLiteCommand timeshiftCommand = new SQLiteCommand(timeshiftUpdateQuery, connection))
                         {
                             timeshiftCommand.Parameters.AddWithValue("@Time", textBoxTime.Text);
                             timeshiftCommand.Parameters.AddWithValue("@HospitalID", textBox1.Text);
@@ -464,7 +460,7 @@ namespace WinFormsApp3
                     if (!string.IsNullOrWhiteSpace(textBoxHos.Text))
                     {
                         string hospitalUpdateQuery = "UPDATE hospitals SET HospitalName = @Hospital WHERE HospitalID = @HospitalID";
-                        using (MySqlCommand hospitalCommand = new MySqlCommand(hospitalUpdateQuery, connection))
+                        using (SQLiteCommand hospitalCommand = new SQLiteCommand(hospitalUpdateQuery, connection))
                         {
                             hospitalCommand.Parameters.AddWithValue("@Hospital", textBoxHos.Text);
                             hospitalCommand.Parameters.AddWithValue("@HospitalID", textBox1.Text);
@@ -482,7 +478,7 @@ namespace WinFormsApp3
                         }
 
                         string departmentUpdateQuery = "UPDATE hospitaldepartments SET DepartmentName = @Department WHERE HospitalID = @HospitalID";
-                        using (MySqlCommand departmentCommand = new MySqlCommand(departmentUpdateQuery, connection))
+                        using (SQLiteCommand departmentCommand = new SQLiteCommand(departmentUpdateQuery, connection))
                         {
                             departmentCommand.Parameters.AddWithValue("@Department", TextBoxDept.Text);
                             departmentCommand.Parameters.AddWithValue("@HospitalID", textBox1.Text);
@@ -500,14 +496,13 @@ namespace WinFormsApp3
                     TextBoxDept.Clear();
                     textBoxID.Clear();
                     textBox1.Clear();
-
-
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error connecting to database: " + ex.ToString());
+                MessageBox.Show("Error connecting to database: " + ex.Message);
             }
+
 
         }
 
@@ -548,15 +543,15 @@ namespace WinFormsApp3
 
         private void LoadInstructors()
         {
-            string connectionString = "Server=127.0.0.1;Port=3306;Database=clinicalrotationplanner;Uid=root;Pwd=;";
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;"; // SQLite connection string
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
 
                 string query = "SELECT InstructorID, InstructorName, Designation, BackgroundColor, TextColor FROM clinicalinstructors";
-                using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
                 {
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SQLiteDataReader reader = cmd.ExecuteReader())
                     {
                         dataGridView1.Rows.Clear(); // Clear any existing rows in the DataGridView
                         while (reader.Read())
@@ -576,5 +571,7 @@ namespace WinFormsApp3
         }
     }
 }
-    
+
+
+
 

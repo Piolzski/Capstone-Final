@@ -16,6 +16,15 @@
     <PackageReference Include="MySql.Data" Version="9.1.0" />
     <PackageReference Include="MySqlConnector" Version="2.3.7" />
     <PackageReference Include="SpreadsheetGear" Version="9.3.12" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.1.10" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="clinicalrotationplanner.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
