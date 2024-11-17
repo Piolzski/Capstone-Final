@@ -75,6 +75,7 @@ namespace WinFormsApp3
 
             // Show the Rotation Filler form
            Form1.Show();
+            //added one C.I color to be assessed tommorrow ang uban 
         }
     }
 }
