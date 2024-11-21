@@ -443,8 +443,17 @@ namespace WinFormsApp3
                     MessageBox.Show($"An error occurred: {ex.Message}");
                 }
 
+                // Clear inputs
+                lstTimeShifts.ClearSelected(); // Clears the selection in the list box
+                lstYearLevels.ClearSelected(); // Clears the selection in the year level list box
+                txtNumberOfWeeks.Text = "";    // Clears the text in the textbox
+                groupbox2.Text = "";           // Clears the text in the textbox for groupbox2
+                groupbox3.Text = "";           // Clears the text in the textbox for groupbox3
+                groupbox4.Text = "";           // Clears the text in the textbox for groupbox4
+
 
             }
+
 
         }
 
@@ -881,6 +890,108 @@ namespace WinFormsApp3
                             }
                         }
                     }
+                    // Hardcoded offsets for each year level
+                    int ciOffsetRow = 54; // Clinical Instructor (C.I.) entries always start at row 54
+
+                    // Dictionary to track the current total rotations for each Clinical Instructor
+                    Dictionary<string, int> currentRotations = new Dictionary<string, int>();
+
+                    // Add or update each Clinical Instructor's entry
+                    foreach (var ci in lstClinicalInstructors.SelectedItems.Cast<string>())
+                    {
+                        // Retrieve the C.I.'s colors
+                        var (ciBackgroundColor, ciFontColor) = GetInstructorColorsFromDatabase(ci);
+
+                        // Retrieve the current rotation count from the Excel sheet if available
+                        if (!currentRotations.ContainsKey(ci))
+                        {
+                            currentRotations[ci] = GetCurrentRotationCountFromSheet(worksheet, ci);
+                        }
+
+                        // Increment the total rotations for this C.I. based on the new number of rotations
+                        currentRotations[ci] += numberOfRotations;
+
+                        // Check if the C.I. already exists in the row
+                        int existingColumn = FindColumnForInstructor(worksheet, ciOffsetRow, ci);
+
+                        if (existingColumn > 0)
+                        {
+                            // Update the existing entry
+                            var rotationCell = worksheet.Cell(ciOffsetRow + 1, existingColumn);
+                            rotationCell.Value = $"Rotations: {currentRotations[ci]}"; // Update rotation count
+                        }
+                        else
+                        {
+                            // Add a new entry for the C.I.
+                            int currentColumn = GetNextAvailableColumn(worksheet, ciOffsetRow);
+
+                            // Add the C.I.'s name
+                            var nameCell = worksheet.Cell(ciOffsetRow, currentColumn);
+                            nameCell.Value = ci;
+                            nameCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                            nameCell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+                            nameCell.Style.Font.Bold = true;
+                            nameCell.Style.Font.FontColor = ciFontColor;
+                            nameCell.Style.Fill.SetBackgroundColor(ciBackgroundColor);
+
+                            // Add the rotation count below the name
+                            var rotationCell = worksheet.Cell(ciOffsetRow + 1, currentColumn);
+                            rotationCell.Value = $"Rotations: {currentRotations[ci]}";
+                            rotationCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                            rotationCell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+                            rotationCell.Style.Font.Bold = true;
+                            rotationCell.Style.Font.FontColor = ciFontColor;
+                            rotationCell.Style.Fill.SetBackgroundColor(XLColor.White);
+                        }
+                    }
+
+                    // Helper method to find the column for an existing C.I.
+                    int FindColumnForInstructor(IXLWorksheet worksheet, int row, string ciName)
+                    {
+                        foreach (var cell in worksheet.Row(row).CellsUsed())
+                        {
+                            if (cell.GetString().Equals(ciName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return cell.Address.ColumnNumber; // Return the column number if found
+                            }
+                        }
+                        return -1; // Return -1 if the C.I. is not found
+                    }
+
+                    // Helper method to find the next available column if the C.I. is new
+                    int GetNextAvailableColumn(IXLWorksheet worksheet, int row)
+                    {
+                        int column = 1; // Start from column 1
+                        while (!worksheet.Cell(row, column).IsEmpty())
+                        {
+                            column++;
+                        }
+                        return column;
+                    }
+
+                    // Helper method to get the current rotation count from the sheet
+                    int GetCurrentRotationCountFromSheet(IXLWorksheet worksheet, string ciName)
+                    {
+                        foreach (var cell in worksheet.CellsUsed())
+                        {
+                            if (cell.GetString().Equals(ciName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var rotationCell = worksheet.Cell(cell.Address.RowNumber + 1, cell.Address.ColumnNumber);
+                                string rotationText = rotationCell.GetString();
+
+                                if (rotationText.StartsWith("Rotations:", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (int.TryParse(rotationText.Split(':')[1].Trim(), out int rotationCount))
+                                    {
+                                        return rotationCount;
+                                    }
+                                }
+                            }
+                        }
+                        return 0; // Default to 0 if no rotation count is found
+                    }
+
+
 
                     // Save the workbook
                     workbook.SaveAs(filePath);
@@ -903,6 +1014,9 @@ namespace WinFormsApp3
                 groupbox3.Text = string.Empty;
                 groupbox4.Text = string.Empty;
             }
+
+
+
 
             // Function to map and validate colors for both background and font
             (XLColor backgroundColor, XLColor fontColor) GetInstructorColorsFromDatabase(string instructorName)
@@ -1186,6 +1300,8 @@ namespace WinFormsApp3
                 ClearSelections();
             }
 
+
+            // Function to map and validate colors for both background and font
             (XLColor backgroundColor, XLColor fontColor) GetInstructorColorsFromDatabase(string instructorName)
             {
                 string backgroundColorName = "";
@@ -1206,23 +1322,25 @@ namespace WinFormsApp3
                             if (reader.Read())
                             {
                                 // Retrieve color names from the database
-                                backgroundColorName = reader["backgroundColor"]?.ToString() ?? "NoColor";
-                                textColorName = reader["textColor"]?.ToString() ?? "Black";
+                                backgroundColorName = reader["backgroundColor"]?.ToString()?.Trim() ?? "NoColor";
+                                textColorName = reader["textColor"]?.ToString()?.Trim() ?? "Black";
                             }
                             else
                             {
+                                // Fallback if no colors are found
                                 MessageBox.Show($"No colors found for the Clinical Instructor: {instructorName}");
-                                return (XLColor.NoColor, XLColor.Black); // Default values if not found
+                                return (XLColor.NoColor, XLColor.Black);
                             }
                         }
                     }
                 }
 
-                // Validate both colors
+                // Map the colors dynamically using the MapColorNameToXLColor function
                 XLColor backgroundColor = MapColorNameToXLColor(backgroundColorName);
                 XLColor fontColor = MapColorNameToXLColor(textColorName);
 
-                // Check if either color is invalid and display an appropriate message
+
+                // Validate both colors and handle invalid entries
                 if (backgroundColor == XLColor.NoColor)
                 {
                     MessageBox.Show($"Invalid background color: {backgroundColorName}. Defaulting to NoColor.");
@@ -1233,35 +1351,28 @@ namespace WinFormsApp3
                     MessageBox.Show($"Invalid font color: {textColorName}. Defaulting to Black.");
                 }
 
+                // Return validated colors
                 return (backgroundColor, fontColor);
             }
-
             XLColor MapColorNameToXLColor(string colorName)
             {
-                // Get all predefined XLColor properties dynamically
+                if (string.IsNullOrWhiteSpace(colorName)) return XLColor.NoColor;
+
+                // Trim spaces and ensure case-insensitive matching
+                colorName = colorName.Trim().ToLower();
+
+                // Use a dictionary of predefined colors
                 var xlColors = typeof(XLColor)
                     .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-                    .Where(p => p.PropertyType == typeof(XLColor)) // Ensure it's an XLColor property
-                    .ToDictionary(p => p.Name.ToLower(), p => (XLColor)p.GetValue(null)!); // Create a dictionary: name -> XLColor
+                    .Where(p => p.PropertyType == typeof(XLColor))
+                    .ToDictionary(p => p.Name.ToLower(), p => (XLColor)p.GetValue(null)!);
 
-                if (colorName == null)
-                    return XLColor.NoColor; // Default to NoColor if colorName is null
+                if (xlColors.TryGetValue(colorName, out var xlColor)) return xlColor;
 
-                // Attempt to match the colorName with an XLColor
-                if (xlColors.TryGetValue(colorName.ToLower(), out var xlColor))
-                    return xlColor;
-
-                // Handle cases for RGB or Hex color codes (e.g., "#FF8040" or "255,128,64")
+                // Handle hex and RGB colors
                 if (colorName.StartsWith("#"))
                 {
-                    try
-                    {
-                        return XLColor.FromHtml(colorName); // For hex color codes
-                    }
-                    catch
-                    {
-                        return XLColor.NoColor; // Return NoColor if invalid hex
-                    }
+                    try { return XLColor.FromHtml(colorName); } catch { return XLColor.NoColor; }
                 }
 
                 if (colorName.Contains(","))
@@ -1269,15 +1380,12 @@ namespace WinFormsApp3
                     try
                     {
                         var rgb = colorName.Split(',').Select(int.Parse).ToArray();
-                        return XLColor.FromArgb(rgb[0], rgb[1], rgb[2]); // For RGB values
+                        return XLColor.FromArgb(rgb[0], rgb[1], rgb[2]);
                     }
-                    catch
-                    {
-                        return XLColor.NoColor; // Return NoColor if invalid RGB
-                    }
+                    catch { return XLColor.NoColor; }
                 }
 
-                // Default to NoColor if not recognized
+                // Default to NoColor if unrecognized
                 return XLColor.NoColor;
             }
 

@@ -96,7 +96,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(38, 59);
+            label1.Location = new Point(43, 44);
             label1.Name = "label1";
             label1.Size = new Size(186, 28);
             label1.TabIndex = 0;
@@ -105,7 +105,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.BackColor = Color.Wheat;
+            label2.BackColor = Color.Transparent;
             label2.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             label2.Location = new Point(718, 9);
             label2.Name = "label2";
@@ -116,7 +116,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.BackColor = Color.Orange;
+            label3.BackColor = Color.Transparent;
             label3.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             label3.Location = new Point(1054, 28);
             label3.Name = "label3";
@@ -139,16 +139,16 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label5.Location = new Point(40, 87);
+            label5.Location = new Point(729, 41);
             label5.Name = "label5";
-            label5.Size = new Size(84, 28);
+            label5.Size = new Size(128, 28);
             label5.TabIndex = 4;
-            label5.Text = "Groups:";
+            label5.Text = "Add Groups:";
             // 
             // label6
             // 
             label6.AutoSize = true;
-            label6.BackColor = Color.Wheat;
+            label6.BackColor = Color.Transparent;
             label6.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label6.Location = new Point(207, 39);
             label6.Name = "label6";
@@ -159,7 +159,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.BackColor = Color.Wheat;
+            label7.BackColor = Color.Transparent;
             label7.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label7.Location = new Point(215, 98);
             label7.Name = "label7";
@@ -186,11 +186,11 @@
             // lstClinicalInstructors
             // 
             lstClinicalInstructors.FormattingEnabled = true;
-            lstClinicalInstructors.Location = new Point(235, 19);
+            lstClinicalInstructors.Location = new Point(43, 83);
             lstClinicalInstructors.Margin = new Padding(3, 4, 3, 4);
             lstClinicalInstructors.Name = "lstClinicalInstructors";
             lstClinicalInstructors.SelectionMode = SelectionMode.MultiExtended;
-            lstClinicalInstructors.Size = new Size(280, 104);
+            lstClinicalInstructors.Size = new Size(280, 124);
             lstClinicalInstructors.TabIndex = 9;
             lstClinicalInstructors.SelectedIndexChanged += lstClinicalInstructors_SelectedIndexChanged;
             // 
@@ -221,13 +221,13 @@
             txtNumberOfWeeks.Location = new Point(713, 43);
             txtNumberOfWeeks.Margin = new Padding(3, 4, 3, 4);
             txtNumberOfWeeks.Name = "txtNumberOfWeeks";
-            txtNumberOfWeeks.Size = new Size(205, 27);
+            txtNumberOfWeeks.Size = new Size(216, 27);
             txtNumberOfWeeks.TabIndex = 15;
             // 
             // label8
             // 
             label8.AutoSize = true;
-            label8.BackColor = Color.Wheat;
+            label8.BackColor = Color.Transparent;
             label8.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label8.ForeColor = Color.Black;
             label8.Location = new Point(58, 28);
@@ -250,13 +250,13 @@
             // 
             // button1
             // 
-            button1.BackColor = Color.Green;
-            button1.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button1.BackColor = Color.OrangeRed;
+            button1.Font = new Font("Microsoft Sans Serif", 13.8F);
             button1.ForeColor = Color.White;
-            button1.Location = new Point(16, 240);
+            button1.Location = new Point(26, 383);
             button1.Margin = new Padding(3, 4, 3, 4);
             button1.Name = "button1";
-            button1.Size = new Size(214, 91);
+            button1.Size = new Size(191, 59);
             button1.TabIndex = 19;
             button1.Text = "Create Excel ";
             button1.UseVisualStyleBackColor = false;
@@ -264,13 +264,13 @@
             // 
             // button3
             // 
-            button3.BackColor = Color.SteelBlue;
-            button3.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button3.BackColor = Color.OrangeRed;
+            button3.Font = new Font("Microsoft Sans Serif", 13.8F);
             button3.ForeColor = Color.White;
-            button3.Location = new Point(16, 385);
+            button3.Location = new Point(26, 475);
             button3.Margin = new Padding(3, 4, 3, 4);
             button3.Name = "button3";
-            button3.Size = new Size(214, 91);
+            button3.Size = new Size(191, 59);
             button3.TabIndex = 20;
             button3.Text = "Open Excel";
             button3.UseVisualStyleBackColor = false;
@@ -278,13 +278,13 @@
             // 
             // button4
             // 
-            button4.BackColor = Color.Red;
-            button4.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button4.BackColor = Color.OrangeRed;
+            button4.Font = new Font("Microsoft Sans Serif", 13.8F);
             button4.ForeColor = Color.White;
-            button4.Location = new Point(16, 525);
+            button4.Location = new Point(26, 563);
             button4.Margin = new Padding(3, 4, 3, 4);
             button4.Name = "button4";
-            button4.Size = new Size(214, 91);
+            button4.Size = new Size(191, 59);
             button4.TabIndex = 21;
             button4.Text = "Close Excel";
             button4.UseVisualStyleBackColor = false;
@@ -292,13 +292,13 @@
             // 
             // button2
             // 
-            button2.BackColor = Color.Maroon;
-            button2.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button2.BackColor = Color.OrangeRed;
+            button2.Font = new Font("Microsoft Sans Serif", 13.8F);
             button2.ForeColor = Color.White;
-            button2.Location = new Point(16, 674);
+            button2.Location = new Point(26, 648);
             button2.Margin = new Padding(3, 4, 3, 4);
             button2.Name = "button2";
-            button2.Size = new Size(214, 91);
+            button2.Size = new Size(191, 59);
             button2.TabIndex = 22;
             button2.Text = "Delete Excel";
             button2.UseVisualStyleBackColor = false;
@@ -354,37 +354,37 @@
             // 
             label10.AutoSize = true;
             label10.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label10.Location = new Point(307, 67);
+            label10.Location = new Point(454, 104);
             label10.Name = "label10";
-            label10.Size = new Size(172, 28);
+            label10.Size = new Size(94, 28);
             label10.TabIndex = 27;
-            label10.Text = "2nd Year Groups:";
+            label10.Text = "2nd Year";
             // 
             // label11
             // 
             label11.AutoSize = true;
-            label11.BackColor = Color.Wheat;
+            label11.BackColor = Color.Transparent;
             label11.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label11.Location = new Point(879, 67);
+            label11.Location = new Point(1033, 104);
             label11.Name = "label11";
-            label11.Size = new Size(168, 28);
+            label11.Size = new Size(90, 28);
             label11.TabIndex = 28;
-            label11.Text = "4th Year Groups:";
+            label11.Text = "4th Year";
             // 
             // label12
             // 
             label12.AutoSize = true;
             label12.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label12.Location = new Point(601, 67);
+            label12.Location = new Point(747, 104);
             label12.Name = "label12";
-            label12.Size = new Size(168, 28);
+            label12.Size = new Size(96, 28);
             label12.TabIndex = 29;
-            label12.Text = "3rd Year Groups:";
+            label12.Text = "3rd Year ";
             label12.Click += label12_Click;
             // 
             // groupbox2
             // 
-            groupbox2.Location = new Point(319, 107);
+            groupbox2.Location = new Point(436, 144);
             groupbox2.Margin = new Padding(3, 4, 3, 4);
             groupbox2.Name = "groupbox2";
             groupbox2.Size = new Size(126, 27);
@@ -392,7 +392,7 @@
             // 
             // groupbox3
             // 
-            groupbox3.Location = new Point(614, 107);
+            groupbox3.Location = new Point(731, 144);
             groupbox3.Margin = new Padding(3, 4, 3, 4);
             groupbox3.Name = "groupbox3";
             groupbox3.Size = new Size(126, 27);
@@ -400,7 +400,7 @@
             // 
             // groupbox4
             // 
-            groupbox4.Location = new Point(892, 107);
+            groupbox4.Location = new Point(1009, 144);
             groupbox4.Margin = new Padding(3, 4, 3, 4);
             groupbox4.Name = "groupbox4";
             groupbox4.Size = new Size(126, 27);
@@ -408,7 +408,7 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(701, 59);
+            textBox1.Location = new Point(602, 74);
             textBox1.Margin = new Padding(3, 4, 3, 4);
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(126, 27);
@@ -418,7 +418,7 @@
             // 
             label13.AutoSize = true;
             label13.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label13.Location = new Point(569, 16);
+            label13.Location = new Point(468, 23);
             label13.Name = "label13";
             label13.Size = new Size(391, 28);
             label13.TabIndex = 35;
@@ -430,7 +430,7 @@
             btnClinicalinstructor.BackColor = Color.FromArgb(255, 128, 0);
             btnClinicalinstructor.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnClinicalinstructor.ForeColor = Color.White;
-            btnClinicalinstructor.Location = new Point(1002, 114);
+            btnClinicalinstructor.Location = new Point(917, 99);
             btnClinicalinstructor.Margin = new Padding(3, 4, 3, 4);
             btnClinicalinstructor.Name = "btnClinicalinstructor";
             btnClinicalinstructor.Size = new Size(206, 54);
@@ -441,7 +441,7 @@
             // 
             // panel1
             // 
-            panel1.BackColor = Color.DarkOrange;
+            panel1.BackColor = Color.Khaki;
             panel1.BorderStyle = BorderStyle.Fixed3D;
             panel1.Controls.Add(button9);
             panel1.Controls.Add(pictureBox2);
@@ -460,13 +460,13 @@
             // 
             // button9
             // 
-            button9.BackColor = Color.Yellow;
-            button9.Font = new Font("Microsoft Sans Serif", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button9.BackColor = Color.OrangeRed;
+            button9.Font = new Font("Microsoft Sans Serif", 13.8F);
             button9.ForeColor = Color.White;
-            button9.Location = new Point(16, 826);
+            button9.Location = new Point(26, 740);
             button9.Margin = new Padding(3, 4, 3, 4);
             button9.Name = "button9";
-            button9.Size = new Size(214, 91);
+            button9.Size = new Size(191, 59);
             button9.TabIndex = 46;
             button9.Text = "Excel Preview";
             button9.UseVisualStyleBackColor = false;
@@ -474,32 +474,34 @@
             // 
             // pictureBox2
             // 
-            pictureBox2.BackColor = Color.DarkOrange;
+            pictureBox2.BackColor = Color.OrangeRed;
             pictureBox2.BackgroundImage = (Image)resources.GetObject("pictureBox2.BackgroundImage");
             pictureBox2.BackgroundImageLayout = ImageLayout.Zoom;
-            pictureBox2.Location = new Point(3, -2);
+            pictureBox2.BorderStyle = BorderStyle.Fixed3D;
+            pictureBox2.Location = new Point(-2, -2);
             pictureBox2.Margin = new Padding(3, 4, 3, 4);
             pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(68, 60);
+            pictureBox2.Size = new Size(250, 85);
             pictureBox2.TabIndex = 45;
             pictureBox2.TabStop = false;
             pictureBox2.Click += pictureBox2_Click;
             // 
             // pictureBox1
             // 
+            pictureBox1.BackColor = Color.White;
             pictureBox1.BackgroundImage = (Image)resources.GetObject("pictureBox1.BackgroundImage");
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox1.BorderStyle = BorderStyle.FixedSingle;
-            pictureBox1.Location = new Point(51, 66);
+            pictureBox1.BorderStyle = BorderStyle.Fixed3D;
+            pictureBox1.Location = new Point(-2, 82);
             pictureBox1.Margin = new Padding(3, 4, 3, 4);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(141, 138);
+            pictureBox1.Size = new Size(250, 234);
             pictureBox1.TabIndex = 23;
             pictureBox1.TabStop = false;
             // 
             // panel3
             // 
-            panel3.BackColor = Color.Wheat;
+            panel3.BackColor = Color.PaleGoldenrod;
             panel3.BorderStyle = BorderStyle.Fixed3D;
             panel3.Controls.Add(label18);
             panel3.Controls.Add(textBoxSpecifiedWeeks);
@@ -513,7 +515,7 @@
             panel3.Controls.Add(label2);
             panel3.Controls.Add(lstYearLevels);
             panel3.Controls.Add(label3);
-            panel3.Location = new Point(279, 27);
+            panel3.Location = new Point(394, 37);
             panel3.Margin = new Padding(3, 4, 3, 4);
             panel3.Name = "panel3";
             panel3.Size = new Size(1236, 179);
@@ -523,7 +525,7 @@
             // label18
             // 
             label18.AutoSize = true;
-            label18.BackColor = Color.Wheat;
+            label18.BackColor = Color.Transparent;
             label18.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             label18.Location = new Point(718, 102);
             label18.Name = "label18";
@@ -540,7 +542,7 @@
             // 
             // panel2
             // 
-            panel2.BackColor = Color.Wheat;
+            panel2.BackColor = Color.PaleGoldenrod;
             panel2.BorderStyle = BorderStyle.Fixed3D;
             panel2.Controls.Add(panel6);
             panel2.Controls.Add(button6);
@@ -549,7 +551,7 @@
             panel2.Controls.Add(lstDepartments);
             panel2.Controls.Add(label4);
             panel2.Controls.Add(button5);
-            panel2.Location = new Point(279, 230);
+            panel2.Location = new Point(394, 240);
             panel2.Margin = new Padding(3, 4, 3, 4);
             panel2.Name = "panel2";
             panel2.Size = new Size(1236, 195);
@@ -558,7 +560,7 @@
             // 
             // panel6
             // 
-            panel6.BackColor = Color.Wheat;
+            panel6.BackColor = Color.PaleGoldenrod;
             panel6.BorderStyle = BorderStyle.Fixed3D;
             panel6.Controls.Add(button7);
             panel6.Controls.Add(textBox3);
@@ -566,10 +568,10 @@
             panel6.Controls.Add(listBox1);
             panel6.Controls.Add(label16);
             panel6.Controls.Add(button8);
-            panel6.Location = new Point(3, -2);
+            panel6.Location = new Point(-2, -2);
             panel6.Margin = new Padding(3, 4, 3, 4);
             panel6.Name = "panel6";
-            panel6.Size = new Size(1236, 195);
+            panel6.Size = new Size(1470, 195);
             panel6.TabIndex = 42;
             // 
             // button7
@@ -577,7 +579,7 @@
             button7.BackColor = Color.DarkOrange;
             button7.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button7.ForeColor = Color.White;
-            button7.Location = new Point(1013, 68);
+            button7.Location = new Point(917, 69);
             button7.Margin = new Padding(3, 4, 3, 4);
             button7.Name = "button7";
             button7.Size = new Size(186, 64);
@@ -588,7 +590,7 @@
             // 
             // textBox3
             // 
-            textBox3.Location = new Point(430, 85);
+            textBox3.Location = new Point(291, 98);
             textBox3.Margin = new Padding(3, 4, 3, 4);
             textBox3.Name = "textBox3";
             textBox3.Size = new Size(165, 27);
@@ -598,7 +600,7 @@
             // 
             label15.AutoSize = true;
             label15.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label15.Location = new Point(215, 85);
+            label15.Location = new Point(278, 48);
             label15.Name = "label15";
             label15.Size = new Size(187, 28);
             label15.TabIndex = 23;
@@ -629,7 +631,7 @@
             button8.BackColor = Color.DarkOrange;
             button8.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button8.ForeColor = Color.White;
-            button8.Location = new Point(665, 64);
+            button8.Location = new Point(569, 65);
             button8.Margin = new Padding(3, 4, 3, 4);
             button8.Name = "button8";
             button8.Size = new Size(251, 64);
@@ -640,7 +642,7 @@
             // 
             // panel4
             // 
-            panel4.BackColor = Color.Wheat;
+            panel4.BackColor = Color.PaleGoldenrod;
             panel4.BorderStyle = BorderStyle.Fixed3D;
             panel4.Controls.Add(textBox16hrs);
             panel4.Controls.Add(label14);
@@ -649,15 +651,15 @@
             panel4.Controls.Add(btnClinicalinstructor);
             panel4.Controls.Add(label1);
             panel4.Controls.Add(textBox1);
-            panel4.Location = new Point(279, 452);
+            panel4.Location = new Point(394, 462);
             panel4.Margin = new Padding(3, 4, 3, 4);
             panel4.Name = "panel4";
-            panel4.Size = new Size(1236, 268);
+            panel4.Size = new Size(1236, 247);
             panel4.TabIndex = 42;
             // 
             // textBox16hrs
             // 
-            textBox16hrs.Location = new Point(701, 148);
+            textBox16hrs.Location = new Point(598, 183);
             textBox16hrs.Name = "textBox16hrs";
             textBox16hrs.Size = new Size(120, 27);
             textBox16hrs.TabIndex = 39;
@@ -667,7 +669,7 @@
             label14.AutoSize = true;
             label14.BorderStyle = BorderStyle.FixedSingle;
             label14.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label14.Location = new Point(658, 101);
+            label14.Location = new Point(553, 123);
             label14.Name = "label14";
             label14.RightToLeft = RightToLeft.No;
             label14.Size = new Size(222, 30);
@@ -678,34 +680,37 @@
             // 
             checklistboxExclude.FormattingEnabled = true;
             checklistboxExclude.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
-            checklistboxExclude.Location = new Point(1567, 68);
+            checklistboxExclude.Location = new Point(43, 60);
             checklistboxExclude.Name = "checklistboxExclude";
-            checklistboxExclude.Size = new Size(263, 224);
+            checklistboxExclude.Size = new Size(238, 180);
             checklistboxExclude.TabIndex = 37;
             // 
             // panel5
             // 
-            panel5.BackColor = Color.Wheat;
+            panel5.BackColor = Color.PaleGoldenrod;
             panel5.BorderStyle = BorderStyle.Fixed3D;
+            panel5.Controls.Add(label17);
             panel5.Controls.Add(groupbox3);
             panel5.Controls.Add(label11);
             panel5.Controls.Add(groupbox4);
+            panel5.Controls.Add(checklistboxExclude);
             panel5.Controls.Add(groupbox2);
             panel5.Controls.Add(label12);
             panel5.Controls.Add(label10);
             panel5.Controls.Add(label5);
-            panel5.Location = new Point(279, 739);
+            panel5.Location = new Point(394, 728);
             panel5.Margin = new Padding(3, 4, 3, 4);
             panel5.Name = "panel5";
-            panel5.Size = new Size(1236, 198);
+            panel5.Size = new Size(1236, 264);
             panel5.TabIndex = 43;
             // 
             // label17
             // 
             label17.AutoSize = true;
-            label17.Location = new Point(1637, 40);
+            label17.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label17.Location = new Point(43, 17);
             label17.Name = "label17";
-            label17.Size = new Size(105, 20);
+            label17.Size = new Size(151, 28);
             label17.TabIndex = 44;
             label17.Text = "Week Excluder";
             label17.Click += label17_Click;
@@ -714,12 +719,10 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.Goldenrod;
+            BackColor = Color.SandyBrown;
             ClientSize = new Size(1902, 1033);
-            Controls.Add(label17);
             Controls.Add(panel3);
             Controls.Add(panel1);
-            Controls.Add(checklistboxExclude);
             Controls.Add(panel2);
             Controls.Add(panel4);
             Controls.Add(panel5);
@@ -741,7 +744,6 @@
             panel5.ResumeLayout(false);
             panel5.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
