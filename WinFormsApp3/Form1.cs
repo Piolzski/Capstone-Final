@@ -890,6 +890,7 @@ namespace WinFormsApp3
                             }
                         }
                     }
+
                     // Hardcoded offsets for each year level
                     int ciOffsetRow = 54; // Clinical Instructor (C.I.) entries always start at row 54
 
@@ -906,6 +907,12 @@ namespace WinFormsApp3
                         if (!currentRotations.ContainsKey(ci))
                         {
                             currentRotations[ci] = GetCurrentRotationCountFromSheet(worksheet, ci);
+                        }
+
+                        // Include the 16-hour shift rotations in the total count
+                        if (is16HourShiftValid)
+                        {
+                            currentRotations[ci]++; // Increment for the 16-hour shift
                         }
 
                         // Increment the total rotations for this C.I. based on the new number of rotations
@@ -1224,6 +1231,9 @@ namespace WinFormsApp3
             { "4th year", 38 }
         };
 
+                    // Track cleared rotations for this C.I.
+                    int clearedRotations = 0;
+
                     // Clear areas based on selected C.I.'s color coding, consecutive weeks, and specific weeks
                     foreach (var yearLevel in selectedYearLevels)
                     {
@@ -1261,6 +1271,7 @@ namespace WinFormsApp3
                                     if (cell.Style.Fill.BackgroundColor == backgroundColor && cell.Style.Font.FontColor == fontColor)
                                     {
                                         cell.Clear();
+                                        clearedRotations++; // Increment cleared rotations count
                                     }
                                 }
                             }
@@ -1281,15 +1292,53 @@ namespace WinFormsApp3
                                     if (cell.Style.Fill.BackgroundColor == backgroundColor && cell.Style.Font.FontColor == fontColor)
                                     {
                                         cell.Clear();
+                                        clearedRotations++; // Increment cleared rotations count
                                     }
                                 }
                             }
                         }
                     }
 
+                    // Decrement the C.I.'s rotation count based on cleared areas
+                    if (clearedRotations > 0)
+                    {
+                        int ciOffsetRow = 54; // Starting row for Clinical Instructor entries
+                        int ciColumn = FindColumnForInstructor(worksheet, ciOffsetRow, selectedCI);
+
+                        if (ciColumn > 0)
+                        {
+                            // Retrieve current rotation count
+                            var rotationCell = worksheet.Cell(ciOffsetRow + 1, ciColumn);
+                            string rotationText = rotationCell.GetString();
+                            int currentRotationCount = 0;
+
+                            if (rotationText.StartsWith("Rotations:", StringComparison.OrdinalIgnoreCase))
+                            {
+                                int.TryParse(rotationText.Split(':')[1].Trim(), out currentRotationCount);
+                            }
+
+                            // Update rotation count
+                            currentRotationCount = Math.Max(0, currentRotationCount - clearedRotations);
+                            rotationCell.Value = $"Rotations: {currentRotationCount}";
+                        }
+                    }
+
+                    int FindColumnForInstructor(IXLWorksheet worksheet, int row, string ciName)
+                    {
+                        foreach (var cell in worksheet.Row(row).CellsUsed())
+                        {
+                            if (cell.GetString().Equals(ciName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return cell.Address.ColumnNumber; // Return the column number if the C.I. is found
+                            }
+                        }
+                        return -1; // Return -1 if the C.I. is not found
+                    }
+
+
                     // Save the updated Excel file
                     workbook.SaveAs(filePath);
-                    MessageBox.Show("Areas cleared successfully based on Clinical Instructor color coding, number of weeks, and specified weeks.");
+                    MessageBox.Show("Areas cleared successfully and rotations updated.");
                 }
                 catch (Exception ex)
                 {
@@ -1299,6 +1348,7 @@ namespace WinFormsApp3
                 // Clear selections and inputs after processing
                 ClearSelections();
             }
+
 
 
             // Function to map and validate colors for both background and font
@@ -1391,6 +1441,8 @@ namespace WinFormsApp3
 
 
 
+
+
             // Helper function to clear selections and reset inputs
             void ClearSelections()
             {
@@ -1410,7 +1462,7 @@ namespace WinFormsApp3
 
 
 
-
+            // bugs left for the system (overlapping of rotations no proper 16 hr logic for the 11 to 7 and group select group remover not added yet due to considerations to be assessed and clinical instructor color will be altered along the way)
 
 
         }
@@ -1666,3 +1718,4 @@ namespace WinFormsApp3
         }
     }
 }
+

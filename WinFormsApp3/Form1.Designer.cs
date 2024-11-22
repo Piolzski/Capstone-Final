@@ -230,7 +230,7 @@
             label8.BackColor = Color.Transparent;
             label8.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label8.ForeColor = Color.Black;
-            label8.Location = new Point(58, 28);
+            label8.Location = new Point(54, 28);
             label8.Name = "label8";
             label8.Size = new Size(115, 28);
             label8.TabIndex = 17;
