@@ -33,12 +33,10 @@
             label10 = new Label();
             button4 = new Button();
             TextBoxDept = new TextBox();
-            label9 = new Label();
             button3 = new Button();
             button1 = new Button();
             label7 = new Label();
             textBoxTime = new TextBox();
-            label6 = new Label();
             textBoxSpec = new TextBox();
             textBoxName = new TextBox();
             label3 = new Label();
@@ -57,7 +55,6 @@
             textBoxLVLID = new TextBox();
             label14 = new Label();
             label15 = new Label();
-            label16 = new Label();
             textBoxgrp = new TextBox();
             label17 = new Label();
             textBoxColorCode = new TextBox();
@@ -67,10 +64,14 @@
             panel2 = new Panel();
             panel3 = new Panel();
             panel5 = new Panel();
+            panel4 = new Panel();
+            panel6 = new Panel();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
             panel3.SuspendLayout();
             panel5.SuspendLayout();
+            panel4.SuspendLayout();
+            panel6.SuspendLayout();
             SuspendLayout();
             // 
             // textBox1
@@ -95,11 +96,12 @@
             // 
             // button4
             // 
-            button4.BackColor = Color.Peru;
+            button4.BackColor = Color.DarkOrange;
             button4.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button4.Location = new Point(1126, 633);
+            button4.ForeColor = SystemColors.ButtonFace;
+            button4.Location = new Point(19, 353);
             button4.Name = "button4";
-            button4.Size = new Size(243, 90);
+            button4.Size = new Size(145, 43);
             button4.TabIndex = 21;
             button4.Text = "UPDATE";
             button4.UseVisualStyleBackColor = false;
@@ -107,30 +109,19 @@
             // 
             // TextBoxDept
             // 
-            TextBoxDept.Location = new Point(1198, 224);
+            TextBoxDept.Location = new Point(27, 294);
             TextBoxDept.Name = "TextBoxDept";
             TextBoxDept.Size = new Size(209, 25);
             TextBoxDept.TabIndex = 19;
             // 
-            // label9
-            // 
-            label9.AutoSize = true;
-            label9.BackColor = Color.FromArgb(255, 255, 192);
-            label9.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label9.ForeColor = Color.FromArgb(255, 128, 0);
-            label9.Location = new Point(1126, 226);
-            label9.Name = "label9";
-            label9.Size = new Size(52, 21);
-            label9.TabIndex = 18;
-            label9.Text = "Area:";
-            // 
             // button3
             // 
-            button3.BackColor = Color.SandyBrown;
+            button3.BackColor = Color.DarkOrange;
             button3.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button3.Location = new Point(1126, 527);
+            button3.ForeColor = SystemColors.ButtonFace;
+            button3.Location = new Point(19, 247);
             button3.Name = "button3";
-            button3.Size = new Size(243, 90);
+            button3.Size = new Size(145, 43);
             button3.TabIndex = 17;
             button3.Text = "DELETE";
             button3.UseVisualStyleBackColor = false;
@@ -138,11 +129,12 @@
             // 
             // button1
             // 
-            button1.BackColor = Color.Bisque;
+            button1.BackColor = Color.DarkOrange;
             button1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button1.Location = new Point(1126, 422);
+            button1.ForeColor = SystemColors.ButtonFace;
+            button1.Location = new Point(19, 142);
             button1.Name = "button1";
-            button1.Size = new Size(243, 90);
+            button1.Size = new Size(145, 43);
             button1.TabIndex = 15;
             button1.Text = "ADD";
             button1.UseVisualStyleBackColor = false;
@@ -163,22 +155,10 @@
             // 
             // textBoxTime
             // 
-            textBoxTime.Location = new Point(1198, 153);
+            textBoxTime.Location = new Point(23, 114);
             textBoxTime.Name = "textBoxTime";
             textBoxTime.Size = new Size(209, 25);
             textBoxTime.TabIndex = 9;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.BackColor = Color.FromArgb(255, 255, 192);
-            label6.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label6.ForeColor = Color.FromArgb(255, 128, 0);
-            label6.Location = new Point(1124, 156);
-            label6.Name = "label6";
-            label6.Size = new Size(54, 21);
-            label6.TabIndex = 8;
-            label6.Text = "Time:";
             // 
             // textBoxSpec
             // 
@@ -222,13 +202,13 @@
             // 
             // pictureBox1
             // 
-            pictureBox1.BackColor = Color.Transparent;
+            pictureBox1.BackColor = Color.OrangeRed;
             pictureBox1.BackgroundImage = (Image)resources.GetObject("pictureBox1.BackgroundImage");
             pictureBox1.BackgroundImageLayout = ImageLayout.Zoom;
             pictureBox1.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox1.Location = new Point(12, 63);
+            pictureBox1.Location = new Point(-9, 45);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(86, 52);
+            pictureBox1.Size = new Size(203, 52);
             pictureBox1.TabIndex = 16;
             pictureBox1.TabStop = false;
             pictureBox1.Click += pictureBox1_Click;
@@ -261,9 +241,9 @@
             label11.ForeColor = Color.FromArgb(255, 128, 0);
             label11.Location = new Point(347, 9);
             label11.Name = "label11";
-            label11.Size = new Size(120, 27);
+            label11.Size = new Size(99, 27);
             label11.TabIndex = 24;
-            label11.Text = "HOSPITAL";
+            label11.Text = "Hospital";
             label11.Click += label11_Click;
             // 
             // label5
@@ -272,11 +252,11 @@
             label5.BackColor = Color.Transparent;
             label5.Font = new Font("Arial Black", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label5.ForeColor = Color.Black;
-            label5.Location = new Point(1172, 119);
+            label5.Location = new Point(70, 59);
             label5.Name = "label5";
-            label5.Size = new Size(135, 27);
+            label5.Size = new Size(118, 27);
             label5.TabIndex = 25;
-            label5.Text = "TIME SHIFT";
+            label5.Text = "Time Shift";
             // 
             // label4
             // 
@@ -284,7 +264,7 @@
             label4.BackColor = Color.Transparent;
             label4.Font = new Font("Arial Black", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.Black;
-            label4.Location = new Point(1198, 192);
+            label4.Location = new Point(92, 240);
             label4.Name = "label4";
             label4.Size = new Size(61, 27);
             label4.TabIndex = 26;
@@ -318,9 +298,10 @@
             label12.ForeColor = Color.FromArgb(255, 128, 0);
             label12.Location = new Point(347, 24);
             label12.Name = "label12";
-            label12.Size = new Size(116, 27);
+            label12.Size = new Size(122, 27);
             label12.TabIndex = 29;
-            label12.Text = "YearLevel";
+            label12.Text = "Year Level";
+            label12.Click += label12_Click;
             // 
             // label13
             // 
@@ -368,27 +349,15 @@
             label15.BackColor = Color.Transparent;
             label15.Font = new Font("Arial Black", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label15.ForeColor = Color.Black;
-            label15.Location = new Point(1198, 255);
+            label15.Location = new Point(45, 401);
             label15.Name = "label15";
-            label15.Size = new Size(75, 27);
+            label15.Size = new Size(163, 27);
             label15.TabIndex = 36;
-            label15.Text = "Group";
-            // 
-            // label16
-            // 
-            label16.AutoSize = true;
-            label16.BackColor = Color.FromArgb(255, 255, 192);
-            label16.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label16.ForeColor = Color.FromArgb(255, 128, 0);
-            label16.Location = new Point(1085, 289);
-            label16.Name = "label16";
-            label16.Size = new Size(102, 21);
-            label16.TabIndex = 34;
-            label16.Text = "GroupNum:";
+            label15.Text = "Group Number";
             // 
             // textBoxgrp
             // 
-            textBoxgrp.Location = new Point(1198, 287);
+            textBoxgrp.Location = new Point(23, 461);
             textBoxgrp.Name = "textBoxgrp";
             textBoxgrp.Size = new Size(209, 25);
             textBoxgrp.TabIndex = 35;
@@ -434,7 +403,7 @@
             // 
             // panel1
             // 
-            panel1.BackColor = Color.WhiteSmoke;
+            panel1.BackColor = Color.Moccasin;
             panel1.BorderStyle = BorderStyle.Fixed3D;
             panel1.Controls.Add(textBoxTextColor);
             panel1.Controls.Add(label18);
@@ -448,7 +417,7 @@
             panel1.Controls.Add(textBoxName);
             panel1.Controls.Add(textBoxSpec);
             panel1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            panel1.Location = new Point(104, 63);
+            panel1.Location = new Point(220, 85);
             panel1.Name = "panel1";
             panel1.Size = new Size(846, 197);
             panel1.TabIndex = 41;
@@ -459,19 +428,19 @@
             panel2.BackColor = Color.DarkOrange;
             panel2.Location = new Point(-9, -5);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1048, 50);
+            panel2.Size = new Size(1411, 50);
             panel2.TabIndex = 42;
             // 
             // panel3
             // 
-            panel3.BackColor = Color.WhiteSmoke;
+            panel3.BackColor = Color.Moccasin;
             panel3.BorderStyle = BorderStyle.Fixed3D;
             panel3.Controls.Add(label11);
             panel3.Controls.Add(label10);
             panel3.Controls.Add(label7);
             panel3.Controls.Add(textBox1);
             panel3.Controls.Add(textBoxHos);
-            panel3.Location = new Point(104, 289);
+            panel3.Location = new Point(220, 311);
             panel3.Name = "panel3";
             panel3.Size = new Size(846, 128);
             panel3.TabIndex = 43;
@@ -479,44 +448,61 @@
             // 
             // panel5
             // 
-            panel5.BackColor = Color.WhiteSmoke;
+            panel5.BackColor = Color.Moccasin;
             panel5.BorderStyle = BorderStyle.Fixed3D;
             panel5.Controls.Add(textBoxLVLID);
             panel5.Controls.Add(label14);
             panel5.Controls.Add(textBoxLVL);
             panel5.Controls.Add(label13);
             panel5.Controls.Add(label12);
-            panel5.Location = new Point(104, 445);
+            panel5.Location = new Point(220, 467);
             panel5.Name = "panel5";
             panel5.Size = new Size(846, 165);
             panel5.TabIndex = 45;
             panel5.Paint += panel5_Paint;
             // 
+            // panel4
+            // 
+            panel4.BackColor = Color.SandyBrown;
+            panel4.BorderStyle = BorderStyle.Fixed3D;
+            panel4.Controls.Add(button1);
+            panel4.Controls.Add(button4);
+            panel4.Controls.Add(button3);
+            panel4.Location = new Point(0, 95);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(194, 704);
+            panel4.TabIndex = 46;
+            // 
+            // panel6
+            // 
+            panel6.BackColor = Color.Moccasin;
+            panel6.BorderStyle = BorderStyle.Fixed3D;
+            panel6.Controls.Add(label15);
+            panel6.Controls.Add(textBoxgrp);
+            panel6.Controls.Add(label4);
+            panel6.Controls.Add(label5);
+            panel6.Controls.Add(TextBoxDept);
+            panel6.Controls.Add(textBoxTime);
+            panel6.Location = new Point(1097, 85);
+            panel6.Name = "panel6";
+            panel6.Size = new Size(255, 547);
+            panel6.TabIndex = 47;
+            // 
             // DataGenerator
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(237, 95, 30);
+            BackColor = Color.FromArgb(255, 128, 0);
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(1195, 633);
+            ClientSize = new Size(1386, 788);
+            Controls.Add(panel4);
             Controls.Add(panel5);
             Controls.Add(panel2);
             Controls.Add(panel1);
-            Controls.Add(label15);
-            Controls.Add(label16);
-            Controls.Add(textBoxgrp);
-            Controls.Add(label4);
-            Controls.Add(label5);
-            Controls.Add(label9);
-            Controls.Add(TextBoxDept);
-            Controls.Add(button4);
             Controls.Add(pictureBox1);
-            Controls.Add(label6);
-            Controls.Add(textBoxTime);
-            Controls.Add(button3);
-            Controls.Add(button1);
             Controls.Add(panel3);
+            Controls.Add(panel6);
             DoubleBuffered = true;
             FormBorderStyle = FormBorderStyle.None;
             Name = "DataGenerator";
@@ -529,8 +515,10 @@
             panel3.PerformLayout();
             panel5.ResumeLayout(false);
             panel5.PerformLayout();
+            panel4.ResumeLayout(false);
+            panel6.ResumeLayout(false);
+            panel6.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
@@ -539,13 +527,11 @@
         private Label label3;
         private Label label2;
         private TextBox textBoxTime;
-        private Label label6;
         private Label label7;
         private Button button1;
         private PictureBox pictureBox1;
         private Button button3;
         private TextBox TextBoxDept;
-        private Label label9;
         private Button button4;
         private TextBox textBox1;
         private Label label10;
@@ -562,7 +548,6 @@
         private TextBox textBoxLVLID;
         private Label label14;
         private Label label15;
-        private Label label16;
         private TextBox textBoxgrp;
         private Label label17;
         private TextBox textBoxColorCode;
@@ -572,5 +557,7 @@
         private Panel panel2;
         private Panel panel3;
         private Panel panel5;
+        private Panel panel4;
+        private Panel panel6;
     }
 }
