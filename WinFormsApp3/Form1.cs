@@ -570,6 +570,8 @@ namespace WinFormsApp3
                         return;
                     }
 
+
+
                     // Retrieve the C.I.'s colors from the database (background and text color)
                     var (backgroundColor, fontColor) = GetInstructorColorsFromDatabase(selectedCI);
 
@@ -654,8 +656,11 @@ namespace WinFormsApp3
                             {
                                 int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
 
+                                // Calculate the total number of weeks dynamically
+                                int totalWeeks = CalculateTotalAllocatedWeeks(worksheet, baseTimeshiftColumns);
+
                                 // Loop through the weeks to find the last filled week for the C.I.
-                                for (int week = 0; week < 50; week++) // Assuming 50 as the maximum number of weeks
+                                for (int week = 0; week < totalWeeks; week++) // Dynamically uses totalWeeks
                                 {
                                     int weekOffset = week * 3; // Each week starts 3 columns later
                                     int targetColumn = timeshiftColumn + weekOffset;
@@ -677,7 +682,7 @@ namespace WinFormsApp3
                                         }
                                     }
 
-                                    // If this week was filled for the CI, update the last filled week
+                                    // Update the last week used for the C.I.
                                     if (isWeekFilledForCI)
                                     {
                                         lastWeek = Math.Max(lastWeek, week + 1);
@@ -689,12 +694,17 @@ namespace WinFormsApp3
                         return lastWeek;
                     }
 
+
                     // Use the modified function to get the last week for the selected C.I. based on both background and font colors
                     int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor, fontColor);
 
 
                     // Global tracking dictionary to avoid conflicts across C.I.s
                     var globalGroupAssignments = new Dictionary<(int yearLevel, string timeshift, int week), HashSet<int>>();
+
+
+                    // Calculate the total weeks available in the worksheet
+                    int totalWeeksAllocated = CalculateTotalAllocatedWeeks(worksheet, baseTimeshiftColumns);
 
 
                     // Retrieve weeks to exclude from the week excluder checklistbox
@@ -740,6 +750,7 @@ namespace WinFormsApp3
                             }
 
                             int currentRotation = 0; // Track current rotation count
+
 
                             // Start the week count at the determined starting week
                             int week = startingWeek;
@@ -833,21 +844,52 @@ namespace WinFormsApp3
                         }
                     }
 
+                    int CalculateTotalAllocatedWeeks(IXLWorksheet worksheet, Dictionary<string, int> baseTimeshiftColumns)
+                    {
+                        int maxWeek = 0;
+
+                        foreach (var timeshift in baseTimeshiftColumns.Keys)
+                        {
+                            // Get the base column for this timeshift
+                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
+
+                            int lastUsedColumn = 0;
+
+                            // Loop through columns to find the last column with data
+                            for (int col = timeshiftColumn; col <= worksheet.ColumnsUsed().Count(); col++)
+                            {
+                                if (worksheet.Column(col).CellsUsed().Any()) // Check if any cell in this column has data
+                                {
+                                    lastUsedColumn = col; // Update the last used column
+                                }
+                            }
+
+                            // Calculate the number of weeks based on the last used column
+                            if (lastUsedColumn >= timeshiftColumn)
+                            {
+                                int weeksForThisTimeshift = (lastUsedColumn - timeshiftColumn) / 3 + 1; // Each week spans 3 columns
+                                maxWeek = Math.Max(maxWeek, weeksForThisTimeshift); // Update the maximum week count
+                            }
+                        }
+
+                        return maxWeek;
+                    }
+
+                    // Validate if the requested rotations exceed the available weeks
+                    if (numberOfRotations > totalWeeksAllocated)
+                    {
+                        MessageBox.Show($"Error: Only {totalWeeksAllocated} weeks are allocated in the schedule. " +
+                                        $"You have requested {numberOfRotations} rotations, which exceeds the limit.",
+                                        "Week Limit Exceeded", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return; // Stop deployment if the limit is exceeded
+                    }
+
+
                     // Process the 16-hour shift independently if a valid week is specified
                     if (is16HourShiftValid)
                     {
                         // Determine the target column based on the timeshift selection
-                        int targetColumnFor16hrShift;
-                        if (selectedTimeshifts.Contains("3pm to 11pm"))
-                        {
-                            // Use the "7am to 3pm" column if "3pm to 11pm" is selected
-                            targetColumnFor16hrShift = baseTimeshiftColumns["7am to 3pm"];
-                        }
-                        else
-                        {
-                            // Otherwise, default to "3pm to 11pm" as the column for the 16-hour shift
-                            targetColumnFor16hrShift = baseTimeshiftColumns["3pm to 11pm"];
-                        }
+                        int targetColumnFor16hrShift = baseTimeshiftColumns[selectedTimeshifts[0]]; // Use the first selected timeshift directly
 
                         int weekOffsetFor16hrShift = (weekFor16HourShift - 1) * 3;
                         int finalColumnFor16hrShift = targetColumnFor16hrShift + weekOffsetFor16hrShift;
@@ -897,6 +939,7 @@ namespace WinFormsApp3
                             }
                         }
                     }
+
 
                     // Hardcoded offsets for each year level
                     int ciOffsetRow = 54; // Clinical Instructor (C.I.) entries always start at row 54
@@ -1279,7 +1322,15 @@ namespace WinFormsApp3
 
                             // Update rotation count
                             currentRotationCount = Math.Max(0, currentRotationCount - clearedRotations);
-                            rotationCell.Value = $"Rotations: {currentRotationCount}";
+                            if (currentRotationCount == 0)
+                            {
+                                // Remove the C.I. from the worksheet and shift others left
+                                ClearInstructorColumnAndShiftLeft(worksheet, ciOffsetRow, ciColumn);
+                            }
+                            else
+                            {
+                                rotationCell.Value = $"Rotations: {currentRotationCount}";
+                            }
                         }
                     }
 
@@ -1294,6 +1345,27 @@ namespace WinFormsApp3
                         }
                         return -1; // Return -1 if the C.I. is not found
                     }
+
+                    void ClearInstructorColumnAndShiftLeft(IXLWorksheet worksheet, int ciRow, int ciColumn)
+                    {
+                        int lastColumn = worksheet.Row(ciRow).LastCellUsed().Address.ColumnNumber;
+
+                        // Clear the current column (Clinical Instructor's name and rotations)
+                        worksheet.Cell(ciRow, ciColumn).Clear(); // Clear C.I.'s name
+                        worksheet.Cell(ciRow + 1, ciColumn).Clear(); // Clear C.I.'s rotation count
+
+                        // Shift the remaining columns to the left
+                        for (int col = ciColumn + 1; col <= lastColumn; col++)
+                        {
+                            foreach (var row in new[] { ciRow, ciRow + 1 }) // Shift both name and rotation cells
+                            {
+                                worksheet.Cell(row, col - 1).Value = worksheet.Cell(row, col).Value;
+                                worksheet.Cell(row, col - 1).Style = worksheet.Cell(row, col).Style;
+                                worksheet.Cell(row, col).Clear(); // Clear the source cell after shifting
+                            }
+                        }
+                    }
+
 
 
                     // Save the updated Excel file
@@ -1463,7 +1535,7 @@ namespace WinFormsApp3
 
         private void button7_Click_1(object sender, EventArgs e)
         {
-          //this code has been altered to removed sooner if no errors persiss
+            //this code has been altered to removed sooner if no errors persiss
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -1510,6 +1582,11 @@ namespace WinFormsApp3
         }
 
         private void panel6_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
         {
 
         }
