@@ -125,7 +125,7 @@ namespace WinFormsApp3
                     {
                         using (SQLiteDataReader reader = cmd.ExecuteReader())
                         {
-                            listBox1.Items.Clear(); // Clear the existing items in the ListBox to avoid duplicates
+                            lstDepartments.Items.Clear(); // Clear the existing items in the ListBox to avoid duplicates
 
                             while (reader.Read())
                             {
@@ -134,7 +134,7 @@ namespace WinFormsApp3
 
                                 if (!string.IsNullOrEmpty(departmentName)) // Only add non-empty department names
                                 {
-                                    listBox1.Items.Add(departmentName);
+                                    lstDepartments.Items.Add(departmentName);
                                 }
                             }
                         }
@@ -544,6 +544,13 @@ namespace WinFormsApp3
             // Path for saving the Excel file
             string filePath = Path.Combine(@"C:\excellsheet\", "RotationSchedule.xlsx");
 
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("Error: The file 'RotationSchedule.xlsx' does not exist. Deployment cannot proceed.",
+                                "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Exit if the file does not exist
+            }
+
             using (var workbook = File.Exists(filePath) ? new XLWorkbook(filePath) : new XLWorkbook()) // Open existing workbook or create new one
             {
                 var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Rotation Schedule")
@@ -578,7 +585,7 @@ namespace WinFormsApp3
                     for (int i = 1; i <= groupsIn4thYear; i++) allGroups.Add(i + 200); // Add groups from 4th year (200 series)
 
                     // Retrieve the selected areas from listbox1
-                    var selectedAreas = listBox1.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
+                    var selectedAreas = lstDepartments.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
                     if (selectedAreas.Length == 0)
                     {
                         MessageBox.Show("No areas selected.");
@@ -998,8 +1005,6 @@ namespace WinFormsApp3
                         return 0; // Default to 0 if no rotation count is found
                     }
 
-
-
                     // Save the workbook
                     workbook.SaveAs(filePath);
                     MessageBox.Show($"Excel file updated successfully at {filePath}");
@@ -1012,7 +1017,7 @@ namespace WinFormsApp3
                 // Clear text and selections after processing
                 lstTimeShifts.ClearSelected();
                 lstYearLevels.ClearSelected();
-                listBox1.ClearSelected();
+                lstDepartments.ClearSelected();
                 lstClinicalInstructors.ClearSelected();
 
                 textBox1.Clear();
@@ -1128,51 +1133,6 @@ namespace WinFormsApp3
         }
 
         private void button6_Click(object sender, EventArgs e)
-        {
-            // nothing to follow it is already changed 
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lstTimeShifts_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel3_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panel2_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void lstClinicalInstructors_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label13_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label12_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button7_Click_1(object sender, EventArgs e)
         {
             // Path for saving the Excel file
             string filePath = Path.Combine(@"C:\excellsheet\", "RotationSchedule.xlsx");
@@ -1448,7 +1408,7 @@ namespace WinFormsApp3
             {
                 lstTimeShifts.ClearSelected();
                 lstYearLevels.ClearSelected();
-                listBox1.ClearSelected();
+                lstDepartments.ClearSelected();
                 lstClinicalInstructors.ClearSelected();
 
                 textBox1.Clear();
@@ -1459,229 +1419,56 @@ namespace WinFormsApp3
                 groupbox3.Text = string.Empty;
                 groupbox4.Text = string.Empty;
             }
+        }
 
+        private void label3_Click(object sender, EventArgs e)
+        {
 
+        }
 
-            // bugs left for the system (overlapping of rotations no proper 16 hr logic for the 11 to 7 and group select group remover not added yet due to considerations to be assessed and clinical instructor color will be altered along the way)
+        private void lstTimeShifts_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
+        }
 
+        private void panel3_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void lstClinicalInstructors_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label13_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label12_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button7_Click_1(object sender, EventArgs e)
+        {
+          //this code has been altered to removed sooner if no errors persiss
         }
 
         private void button8_Click(object sender, EventArgs e)
         {
-            // Path for saving the Excel file
-            // new button for the area putting
-            string filePath = Path.Combine(@"C:\excellsheet", "RotationSchedule.xlsx");
-
-            using (var workbook = File.Exists(filePath) ? new XLWorkbook(filePath) : new XLWorkbook()) // Open existing workbook or create new one
-            {
-                // Check if the worksheet exists, otherwise add a new one
-                var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Rotation Schedule")
-                                ?? workbook.Worksheets.Add("Rotation Schedule");
-
-                try
-                {
-                    // Retrieve selected areas from lstDepartments, trimming spaces
-                    var selectedAreas = lstDepartments.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
-                    if (selectedAreas.Length == 0)
-                    {
-                        MessageBox.Show("No areas selected.");
-                        return;
-                    }
-
-                    // Retrieve selected year levels from lstYearLevels, trimming spaces and converting to lowercase
-                    var selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().Select(s => s.Trim().ToLowerInvariant()).ToArray();
-                    if (selectedYearLevels.Length == 0)
-                    {
-                        MessageBox.Show("No year levels selected.");
-                        return;
-                    }
-
-                    // Retrieve selected timeshift from lstTimeShifts (assuming only one timeshift selected)
-                    var selectedTimeshift = lstTimeShifts.SelectedItem?.ToString()?.Trim().ToLowerInvariant();
-                    if (string.IsNullOrEmpty(selectedTimeshift))
-                    {
-                        MessageBox.Show("No timeshift selected.");
-                        return;
-                    }
-
-                    // Get the number of weeks from user input (assuming it's input via a TextBox or another control)
-                    if (!int.TryParse(txtNumberOfWeeks.Text, out int numberOfWeeks) || numberOfWeeks <= 0)
-                    {
-                        MessageBox.Show("Invalid number of weeks.");
-                        return;
-                    }
-
-                    // Define starting rows for year levels
-                    Dictionary<string, int> yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "2nd year", 6 },  // Start row for 2nd Year
-            { "3rd year", 22 },  // Start row for 3rd Year
-            { "4th year", 38 }  // Start row for 4th Year
-        };
-
-                    // Define the base columns for each timeshift
-                    Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "7am to 3pm", 2 },   // Base column for 7am to 3pm
-            { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
-            { "11pm to 7am", 4 }   // Base column for 11pm to 7am
-        };
-
-                    if (!baseTimeshiftColumns.ContainsKey(selectedTimeshift))
-                    {
-                        MessageBox.Show($"Timeshift '{selectedTimeshift}' is not defined.");
-                        return;
-                    }
-
-                    // Read the number of groups from the textboxes in groupbox2, groupbox3, and groupbox4
-                    int[] numberOfGroups = new int[3]; // Array to store the number of groups for each year level
-
-                    bool validInput = int.TryParse(groupbox2.Text, out numberOfGroups[0]) &&
-                                      int.TryParse(groupbox3.Text, out numberOfGroups[1]) &&
-                                      int.TryParse(groupbox4.Text, out numberOfGroups[2]);
-
-                    if (!validInput || numberOfGroups.Any(g => g <= 0))
-                    {
-                        MessageBox.Show("Invalid number of groups.");
-                        return;
-                    }
-
-                    // Function to read the number of available groups from Excel
-                    int GetAvailableGroups(int startRow, IXLWorksheet worksheet)
-                    {
-                        int availableGroups = 0;
-                        int currentRow = startRow;
-
-                        // Check column 1 (or a relevant column) for non-empty cells
-                        while (!string.IsNullOrWhiteSpace(worksheet.Cell(currentRow, 1).GetString()))
-                        {
-                            availableGroups++;
-                            currentRow++;
-                        }
-
-                        return availableGroups;
-                    }
-
-                    // Validate if selected groups exist for the selected year levels
-                    for (int i = 0; i < selectedYearLevels.Length; i++)
-                    {
-                        var yearLevel = selectedYearLevels[i];
-                        if (!yearLevelStartRows.ContainsKey(yearLevel))
-                        {
-                            MessageBox.Show($"Year level '{yearLevel}' is not defined.");
-                            return;
-                        }
-
-                        int startingRow = yearLevelStartRows[yearLevel];
-
-                        // Get available groups dynamically from Excel
-                        int availableGroups = GetAvailableGroups(startingRow, worksheet);
-
-                        if (numberOfGroups[i] > availableGroups)
-                        {
-                            MessageBox.Show($"The number of groups for '{yearLevel}' exceeds the available groups. Maximum groups: {availableGroups}.");
-                            return;
-                        }
-                    }
-
-                    // Find the next available week for the selected timeshift
-                    int week = 0;
-                    int timeshiftColumn = baseTimeshiftColumns[selectedTimeshift];
-
-                    // Iterate through the weeks to find the first unfilled week
-                    while (true)
-                    {
-                        int weekOffset = week * 3; // Each week starts 3 columns later (since there are 3 timeshifts per week)
-                        int targetColumn = timeshiftColumn + weekOffset;
-
-                        bool isWeekFilled = false;
-                        foreach (var yearLevel in selectedYearLevels)
-                        {
-                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
-                            bool isYearLevelFilled = false;
-
-                            // Check if any group in the current week and timeshift is already filled
-                            for (int g = 0; g < numberOfGroups[selectedYearLevels.ToList().IndexOf(yearLevel)]; g++)
-                            {
-                                int targetRow = startingRowForYearLevel + g;
-                                if (!string.IsNullOrWhiteSpace(worksheet.Cell(targetRow, targetColumn).GetString()))
-                                {
-                                    isYearLevelFilled = true;
-                                    break; // If any group is filled, the week is considered filled for this year level
-                                }
-                            }
-
-                            if (isYearLevelFilled)
-                            {
-                                isWeekFilled = true;
-                                break; // If the week is filled for any year level, move to the next week
-                            }
-                        }
-
-                        if (!isWeekFilled)
-                        {
-                            break; // If the week is not filled for any year level, stop searching and start filling this week
-                        }
-
-                        week++; // Move to the next week
-                    }
-
-                    // Now insert the areas starting from the first available week
-                    for (int w = 0; w < numberOfWeeks; w++)
-                    {
-                        int weekOffset = (week + w) * 3; // Calculate the offset for each week dynamically
-                        int targetColumn = timeshiftColumn + weekOffset;
-
-                        // Insert areas for each selected year level and groups
-                        for (int i = 0; i < selectedYearLevels.Length; i++)
-                        {
-                            var yearLevel = selectedYearLevels[i];
-                            int startingRowForYearLevel = yearLevelStartRows[yearLevel];
-                            int areaIndex = 0; // Track the current area being placed
-
-                            // Insert areas only for the number of groups specified for this year level
-                            for (int g = 0; g < numberOfGroups[i]; g++)
-                            {
-                                if (areaIndex >= selectedAreas.Length) // If we run out of areas, reset the index to start over
-                                {
-                                    areaIndex = 0;
-                                }
-
-                                int targetRow = startingRowForYearLevel + g; // Adjust row based on group number
-
-                                // Place the area in the timeshift column for the current group
-                                worksheet.Cell(targetRow, targetColumn).Value = selectedAreas[areaIndex];
-                                worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-                                worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(XLColor.White); // Optional: Adjust color
-
-                                areaIndex++; // Move to the next area
-                            }
-                        }
-                    }
-
-                    // Save the Excel file
-                    workbook.SaveAs(filePath);
-                    MessageBox.Show($"Excel file updated successfully at {filePath}");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"An error occurred: {ex.Message}");
-
-                    // Clear text and selections after processing
-                    lstTimeShifts.ClearSelected();
-                    lstYearLevels.ClearSelected();
-                    listBox1.ClearSelected();
-                    lstClinicalInstructors.ClearSelected();
-
-
-                    textBox1.Clear();
-                    textBox16hrs.Clear();
-                    groupbox2.Text = string.Empty;
-                    groupbox3.Text = string.Empty;
-                    groupbox4.Text = string.Empty;
-                }
-            }
+            // this code will be used for another reference if needed 
         }
 
         private void pictureBox2_Click(object sender, EventArgs e)
@@ -1714,6 +1501,16 @@ namespace WinFormsApp3
 
             // Optionally, handle the FormClosed event to close the current form when ExcelPreview is closed
             excelPreviewForm.FormClosed += (s, args) => this.Close();
+
+        }
+
+        private void label16_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel6_Paint(object sender, PaintEventArgs e)
+        {
 
         }
     }

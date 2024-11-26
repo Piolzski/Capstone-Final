@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Data Generator.resx~RF5e715f3.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.102.3" />
     <PackageReference Include="ClosedXML.Report" Version="0.2.10" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.4.0" />

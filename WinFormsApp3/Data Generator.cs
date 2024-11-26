@@ -118,14 +118,18 @@ namespace WinFormsApp3
                         {
                             instructorCommand.Parameters.AddWithValue("@Name", textBoxName.Text);
                             instructorCommand.Parameters.AddWithValue("@Designation", textBoxSpec.Text);
-                            instructorCommand.Parameters.AddWithValue("@BackgroundColor", textBoxColorCode.Text);
-                            instructorCommand.Parameters.AddWithValue("@TextColor", textBoxTextColor.Text);
+
+                            // Insert NULL if the text boxes are empty
+                            instructorCommand.Parameters.AddWithValue("@BackgroundColor", string.IsNullOrWhiteSpace(textBoxColorCode.Text) ? (object)DBNull.Value : textBoxColorCode.Text);
+                            instructorCommand.Parameters.AddWithValue("@TextColor", string.IsNullOrWhiteSpace(textBoxTextColor.Text) ? (object)DBNull.Value : textBoxTextColor.Text);
+
                             instructorCommand.ExecuteNonQuery();
                         }
                     }
 
-                    // Insert data for time shifts if textbox has value
-                    if (!string.IsNullOrWhiteSpace(textBoxTime.Text))
+
+                // Insert data for time shifts if textbox has value
+                if (!string.IsNullOrWhiteSpace(textBoxTime.Text))
                     {
                         string timeshiftInsertQuery = "INSERT INTO timeshifts (TimeShiftName) VALUES (@Time)";
                         using (SQLiteCommand timeshiftCommand = new SQLiteCommand(timeshiftInsertQuery, connection))
@@ -391,29 +395,22 @@ namespace WinFormsApp3
                 {
                     connection.Open();
 
-                    // Update data for clinical instructors if textbox has value
+                    // Update data for clinical instructors if textBoxName and textBoxID have values
                     if (!string.IsNullOrWhiteSpace(textBoxName.Text) && !string.IsNullOrWhiteSpace(textBoxID.Text))
                     {
-                        // Base query for updating instructor name
                         string instructorUpdateQuery = "UPDATE clinicalinstructors SET InstructorName = @Name";
 
-                        // If Designation is provided, include it in the query
+                        // Include Designation if provided
                         if (!string.IsNullOrWhiteSpace(textBoxSpec.Text))
                         {
                             instructorUpdateQuery += ", Designation = @Designation";
                         }
 
-                        // If BackgroundColor is provided, include it in the query
-                        if (!string.IsNullOrWhiteSpace(textBoxColorCode.Text))
-                        {
-                            instructorUpdateQuery += ", BackgroundColor = @BackgroundColor";
-                        }
+                        // Include BackgroundColor even if NULL
+                        instructorUpdateQuery += ", BackgroundColor = @BackgroundColor";
 
-                        // If TextColor is provided, include it in the query
-                        if (!string.IsNullOrWhiteSpace(textBoxTextColor.Text))
-                        {
-                            instructorUpdateQuery += ", TextColor = @TextColor";
-                        }
+                        // Include TextColor even if NULL
+                        instructorUpdateQuery += ", TextColor = @TextColor";
 
                         instructorUpdateQuery += " WHERE InstructorID = @ID";
 
@@ -427,18 +424,16 @@ namespace WinFormsApp3
                             {
                                 instructorCommand.Parameters.AddWithValue("@Designation", textBoxSpec.Text);
                             }
-
-                            // Only add BackgroundColor if it's not empty
-                            if (!string.IsNullOrWhiteSpace(textBoxColorCode.Text))
+                            else
                             {
-                                instructorCommand.Parameters.AddWithValue("@BackgroundColor", textBoxColorCode.Text);
+                                instructorCommand.Parameters.AddWithValue("@Designation", DBNull.Value); // Set NULL if Designation is not provided
                             }
 
-                            // Only add TextColor if it's not empty
-                            if (!string.IsNullOrWhiteSpace(textBoxTextColor.Text))
-                            {
-                                instructorCommand.Parameters.AddWithValue("@TextColor", textBoxTextColor.Text);
-                            }
+                            // Handle BackgroundColor: Set NULL if the text box is empty
+                            instructorCommand.Parameters.AddWithValue("@BackgroundColor", string.IsNullOrWhiteSpace(textBoxColorCode.Text) ? (object)DBNull.Value : textBoxColorCode.Text);
+
+                            // Handle TextColor: Set NULL if the text box is empty
+                            instructorCommand.Parameters.AddWithValue("@TextColor", string.IsNullOrWhiteSpace(textBoxTextColor.Text) ? (object)DBNull.Value : textBoxTextColor.Text);
 
                             instructorCommand.ExecuteNonQuery();
                         }

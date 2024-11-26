@@ -41,9 +41,10 @@
             button2.BackColor = Color.Orange;
             button2.Font = new Font("Bahnschrift", 12F, FontStyle.Bold);
             button2.ForeColor = Color.White;
-            button2.Location = new Point(634, 386);
+            button2.Location = new Point(725, 454);
+            button2.Margin = new Padding(3, 4, 3, 4);
             button2.Name = "button2";
-            button2.Size = new Size(159, 38);
+            button2.Size = new Size(182, 45);
             button2.TabIndex = 2;
             button2.Text = "Generate Data\r\n";
             button2.UseVisualStyleBackColor = false;
@@ -56,9 +57,10 @@
             button1.BackColor = Color.Orange;
             button1.Font = new Font("Bahnschrift", 12F, FontStyle.Bold);
             button1.ForeColor = Color.White;
-            button1.Location = new Point(634, 342);
+            button1.Location = new Point(725, 402);
+            button1.Margin = new Padding(3, 4, 3, 4);
             button1.Name = "button1";
-            button1.Size = new Size(159, 38);
+            button1.Size = new Size(182, 45);
             button1.TabIndex = 5;
             button1.Text = "Fill Rotation";
             button1.UseVisualStyleBackColor = false;
@@ -71,9 +73,10 @@
             button3.BackColor = Color.Orange;
             button3.Font = new Font("Bahnschrift", 12F, FontStyle.Bold);
             button3.ForeColor = Color.White;
-            button3.Location = new Point(634, 430);
+            button3.Location = new Point(725, 506);
+            button3.Margin = new Padding(3, 4, 3, 4);
             button3.Name = "button3";
-            button3.Size = new Size(159, 38);
+            button3.Size = new Size(182, 45);
             button3.TabIndex = 4;
             button3.Text = "Exit";
             button3.UseVisualStyleBackColor = false;
@@ -81,18 +84,19 @@
             // 
             // Dashboard
             // 
-            AutoScaleDimensions = new SizeF(7F, 17F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.OrangeRed;
+            BackColor = Color.LightCoral;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(929, 575);
+            ClientSize = new Size(1062, 676);
             Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(button1);
             DoubleBuffered = true;
+            Margin = new Padding(3, 4, 3, 4);
             Name = "Dashboard";
-            StartPosition = FormStartPosition.CenterScreen;
+            StartPosition = FormStartPosition.CenterParent;
             Load += Dashboard_Load;
             ResumeLayout(false);
             PerformLayout();
