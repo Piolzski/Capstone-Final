@@ -55,7 +55,6 @@ namespace WinFormsApp3
                     dataGridView1.Columns.Add($"Column{col}", headerText);
                 }
 
-                // Populate rows with data from the worksheet
                 for (int row = 2; row <= usedRange.RowCount(); row++) // Start after header
                 {
                     var rowData = new DataGridViewRow();
@@ -66,10 +65,20 @@ namespace WinFormsApp3
                         var cellValue = cell.GetString();
                         var dataCell = new DataGridViewTextBoxCell { Value = cellValue };
 
-                        // Set background color if present
-                        if (!cell.Style.Fill.BackgroundColor.Equals(XLColor.NoColor))
+                        // Set background color
+                        var bgColor = cell.Style.Fill.BackgroundColor;
+
+                        if (bgColor.Equals(XLColor.NoColor)) // Undefined background color
                         {
-                            dataCell.Style.BackColor = Color.FromArgb(cell.Style.Fill.BackgroundColor.Color.ToArgb());
+                            dataCell.Style.BackColor = Color.Gray; // Default to gray
+                        }
+                        else if (bgColor.Color.ToArgb() == Color.Black.ToArgb()) // Handle black color
+                        {
+                            dataCell.Style.BackColor = Color.Gray; // Replace black with gray
+                        }
+                        else
+                        {
+                            dataCell.Style.BackColor = Color.FromArgb(bgColor.Color.ToArgb()); // Use Excel's color
                         }
 
                         // Apply bold font style if applicable
@@ -78,7 +87,7 @@ namespace WinFormsApp3
                             dataCell.Style.Font = new Font(dataGridView1.Font, FontStyle.Bold);
                         }
 
-                        // Apply font color from Excel cell
+                        // Apply font color
                         dataCell.Style.ForeColor = Color.FromArgb(cell.Style.Font.FontColor.Color.ToArgb());
 
                         rowData.Cells.Add(dataCell);
@@ -86,6 +95,7 @@ namespace WinFormsApp3
 
                     dataGridView1.Rows.Add(rowData);
                 }
+
             }
 
             dataGridView1.ResumeLayout();
@@ -115,9 +125,18 @@ namespace WinFormsApp3
     {
         public static void DoubleBuffered(this DataGridView dgv, bool setting)
         {
+            // Enable double buffering using reflection
             typeof(DataGridView).InvokeMember("DoubleBuffered",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.SetProperty,
                 null, dgv, new object[] { setting });
+
+            // Additional optimizations to minimize flickering
+            dgv.ScrollBars = ScrollBars.Both; // Ensure smooth scrolling
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None; // Prevent continuous resizing
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None; // Avoid unnecessary row resizing
+            dgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing; // Disable row header resizing
+            dgv.EnableHeadersVisualStyles = false; // Ensure consistent header rendering
+            dgv.BackgroundColor = dgv.DefaultCellStyle.BackColor; // Match background colors to avoid black spaces
         }
     }
 }

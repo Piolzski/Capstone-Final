@@ -570,8 +570,6 @@ namespace WinFormsApp3
                         return;
                     }
 
-
-
                     // Retrieve the C.I.'s colors from the database (background and text color)
                     var (backgroundColor, fontColor) = GetInstructorColorsFromDatabase(selectedCI);
 
@@ -656,11 +654,8 @@ namespace WinFormsApp3
                             {
                                 int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
 
-                                // Calculate the total number of weeks dynamically
-                                int totalWeeks = CalculateTotalAllocatedWeeks(worksheet, baseTimeshiftColumns);
-
                                 // Loop through the weeks to find the last filled week for the C.I.
-                                for (int week = 0; week < totalWeeks; week++) // Dynamically uses totalWeeks
+                                for (int week = 0; week < 50; week++) // Assuming 50 as the maximum number of weeks
                                 {
                                     int weekOffset = week * 3; // Each week starts 3 columns later
                                     int targetColumn = timeshiftColumn + weekOffset;
@@ -682,7 +677,7 @@ namespace WinFormsApp3
                                         }
                                     }
 
-                                    // Update the last week used for the C.I.
+                                    // If this week was filled for the CI, update the last filled week
                                     if (isWeekFilledForCI)
                                     {
                                         lastWeek = Math.Max(lastWeek, week + 1);
@@ -694,17 +689,12 @@ namespace WinFormsApp3
                         return lastWeek;
                     }
 
-
                     // Use the modified function to get the last week for the selected C.I. based on both background and font colors
                     int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor, fontColor);
 
 
                     // Global tracking dictionary to avoid conflicts across C.I.s
                     var globalGroupAssignments = new Dictionary<(int yearLevel, string timeshift, int week), HashSet<int>>();
-
-
-                    // Calculate the total weeks available in the worksheet
-                    int totalWeeksAllocated = CalculateTotalAllocatedWeeks(worksheet, baseTimeshiftColumns);
 
 
                     // Retrieve weeks to exclude from the week excluder checklistbox
@@ -750,6 +740,21 @@ namespace WinFormsApp3
                             }
 
                             int currentRotation = 0; // Track current rotation count
+
+
+                            // Calculate the total weeks available in the worksheet
+
+                            int totalWeeksAllocated = CalculateTotalAllocatedWeeks(worksheet, baseTimeshiftColumns);
+
+                            // Validate if the requested rotations exceed the available weeks
+                            if (numberOfRotations > totalWeeksAllocated)
+                            {
+                                MessageBox.Show($"Error: Only {totalWeeksAllocated} weeks are allocated in the schedule. " +
+                                                $"You have requested {numberOfRotations} rotations, which exceeds the limit.",
+                                                "Week Limit Exceeded", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return; // Stop deployment if the limit is exceeded
+                            }
+
 
 
                             // Start the week count at the determined starting week
@@ -873,15 +878,6 @@ namespace WinFormsApp3
                         }
 
                         return maxWeek;
-                    }
-
-                    // Validate if the requested rotations exceed the available weeks
-                    if (numberOfRotations > totalWeeksAllocated)
-                    {
-                        MessageBox.Show($"Error: Only {totalWeeksAllocated} weeks are allocated in the schedule. " +
-                                        $"You have requested {numberOfRotations} rotations, which exceeds the limit.",
-                                        "Week Limit Exceeded", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return; // Stop deployment if the limit is exceeded
                     }
 
 
@@ -1589,6 +1585,177 @@ namespace WinFormsApp3
         private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button5_Click_1(object sender, EventArgs e)
+        {
+            {
+                try
+                {
+                    // Get the week to remove from the TextBoxSpecifiedWeeks
+                    if (!int.TryParse(textBoxSpecifiedWeeks.Text, out int weekToRemove) || weekToRemove <= 0)
+                    {
+                        MessageBox.Show("Please enter a valid week number to remove.");
+                        return;
+                    }
+
+                    string filePath = Path.Combine(@"C:\excellsheet", "RotationSchedule.xlsx");
+                    if (!File.Exists(filePath))
+                    {
+                        MessageBox.Show("Excel file not found. Please ensure the file exists at the specified path.");
+                        return;
+                    }
+
+                    using (var workbook = new XLWorkbook(filePath))
+                    {
+                        var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Rotation Schedule");
+                        if (worksheet == null)
+                        {
+                            MessageBox.Show("Worksheet 'Rotation Schedule' not found in the Excel file.");
+                            return;
+                        }
+
+                        // Get the selected timeshifts
+                        List<string> selectedShifts = lstTimeShifts.SelectedItems.Cast<string>().ToList();
+                        if (selectedShifts.Count == 0)
+                        {
+                            MessageBox.Show("Please select at least one timeshift.");
+                            return;
+                        }
+
+                        // Get the selected year levels
+                        List<string> selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().ToList();
+                        if (selectedYearLevels.Count == 0)
+                        {
+                            MessageBox.Show("Please select at least one year level.");
+                            return;
+                        }
+
+                        // Define year level start rows
+                        var yearLevelStartRows = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "2nd Year", 2 },
+            { "3rd Year", 18 },
+            { "4th Year", 34 }
+        };
+
+                        // Define timeshift row offsets relative to year level start row
+                        var timeshiftOffsets = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "7am to 3pm", 0 },   // Relative row offset for timeshift
+            { "3pm to 11pm", 1 },
+            { "11pm to 7am", 2 }
+        };
+
+                        // Find the column corresponding to the specified week
+                        int weekColumn = -1;
+                        for (int col = 2; col <= worksheet.LastColumnUsed()?.ColumnNumber(); col++)
+                        {
+                            if (int.TryParse(worksheet.Cell(2, col).GetString(), out int currentWeek) && currentWeek == weekToRemove)
+                            {
+                                weekColumn = col;
+                                break;
+                            }
+                        }
+
+                        if (weekColumn == -1)
+                        {
+                            MessageBox.Show($"Week {weekToRemove} not found in the worksheet.");
+                            return;
+                        }
+
+                        // Clear data for the specified week, year levels, and timeshifts
+                        foreach (var yearLevel in selectedYearLevels)
+                        {
+                            if (!yearLevelStartRows.ContainsKey(yearLevel))
+                            {
+                                MessageBox.Show($"Year level '{yearLevel}' is not defined in the worksheet.");
+                                continue;
+                            }
+
+                            int yearStartRow = yearLevelStartRows[yearLevel];
+
+                            foreach (var shift in selectedShifts)
+                            {
+                                if (!timeshiftOffsets.ContainsKey(shift))
+                                {
+                                    MessageBox.Show($"Timeshift '{shift}' is not defined in the worksheet.");
+                                    continue;
+                                }
+
+                                int timeshiftRow = yearStartRow + timeshiftOffsets[shift];
+
+                                // Clear all relevant rows for the specified timeshift in the selected week
+                                for (int rowOffset = 0; rowOffset < 4; rowOffset++) // Assuming 4 rows per timeshift (rotation, date, timeshift, hours)
+                                {
+                                    int targetRow = timeshiftRow + rowOffset;
+                                    ClearWeekData(worksheet, weekColumn, targetRow);
+                                }
+                            }
+                        }
+
+                        // Check if the column is completely empty after clearing selected shifts and year levels
+                        bool isWeekEmpty = true;
+                        for (int row = 2; row <= worksheet.LastRowUsed()?.RowNumber(); row++)
+                        {
+                            if (!worksheet.Cell(row, weekColumn).IsEmpty())
+                            {
+                                isWeekEmpty = false;
+                                break;
+                            }
+                        }
+
+                        // If the week column is empty, shift subsequent weeks up
+                        if (isWeekEmpty)
+                        {
+                            ShiftColumnsLeft(worksheet, weekColumn);
+                        }
+
+                        // Save the updated workbook
+                        workbook.SaveAs(filePath);
+                        MessageBox.Show($"Week {weekToRemove} removed successfully.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred: {ex.Message}");
+                }
+
+                // Clear the TextBox after operation
+                textBoxSpecifiedWeeks.Text = "";
+            }
+        }
+
+
+        // Method to clear week data (value + formatting)
+        private void ClearWeekData(IXLWorksheet worksheet, int weekColumn, int row)
+        {
+            var cell = worksheet.Cell(row, weekColumn);
+
+            // Clear the value and formatting
+            cell.Clear(XLClearOptions.All);
+        }
+
+
+
+        // Method to shift columns to the left after clearing a week
+        private void ShiftColumnsLeft(IXLWorksheet worksheet, int startColumn)
+        {
+            for (int col = startColumn + 1; col <= worksheet.LastColumnUsed()?.ColumnNumber(); col++)
+            {
+                for (int row = 2; row <= worksheet.LastRowUsed()?.RowNumber(); row++)
+                {
+                    var sourceCell = worksheet.Cell(row, col);
+                    var targetCell = worksheet.Cell(row, col - 1);
+
+                    // Move data and styles
+                    targetCell.Value = sourceCell.Value;
+                    targetCell.Style = sourceCell.Style;
+
+                    // Clear the source cell
+                    sourceCell.Clear(XLClearOptions.All);
+                }
+            }
         }
     }
 }

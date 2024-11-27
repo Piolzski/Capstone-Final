@@ -348,6 +348,29 @@ namespace WinFormsApp3
                         }
                     }
 
+                    // Delete data for group numbers if textbox has value
+                    if (!string.IsNullOrWhiteSpace(textBoxgrp.Text))
+                    {
+                        string groupDeleteQuery = "DELETE FROM groups WHERE GroupNumber = @GroupNumber";
+                        using (SQLiteCommand groupCommand = new SQLiteCommand(groupDeleteQuery, connection))
+                        {
+                            groupCommand.Parameters.AddWithValue("@GroupNumber", textBoxgrp.Text);
+                            groupCommand.ExecuteNonQuery();
+                        }
+                    }
+
+                    // Delete data for year levels if textboxes have value
+                    if (!string.IsNullOrWhiteSpace(textBoxLVL.Text) && !string.IsNullOrWhiteSpace(textBoxLVLID.Text))
+                    {
+                        string yearLevelDeleteQuery = "DELETE FROM yearlevels WHERE YearLevelID = @YearLevelID";
+                        using (SQLiteCommand yearLevelCommand = new SQLiteCommand(yearLevelDeleteQuery, connection))
+                        {
+                            yearLevelCommand.Parameters.AddWithValue("@YearLevelID", textBoxLVLID.Text);
+                            yearLevelCommand.ExecuteNonQuery();
+                        }
+                    }
+
+
                     if (!dataFoundToDelete)
                     {
                         MessageBox.Show("No matching records found to delete.");
@@ -480,6 +503,33 @@ namespace WinFormsApp3
                             departmentCommand.ExecuteNonQuery();
                         }
                     }
+
+                    // Update data for group numbers if textbox has value
+                    if (!string.IsNullOrWhiteSpace(textBoxgrp.Text))
+                    {
+                        string groupUpdateQuery = "UPDATE groups SET GroupName = @GroupName WHERE GroupNumber = @GroupNumber";
+                        using (SQLiteCommand groupCommand = new SQLiteCommand(groupUpdateQuery, connection))
+                        {
+                            // Assuming you're updating GroupName, you can modify this as needed
+                            groupCommand.Parameters.AddWithValue("@GroupName", "NewGroupName");  // Replace with the desired new value
+                            groupCommand.Parameters.AddWithValue("@GroupNumber", textBoxgrp.Text);
+                            groupCommand.ExecuteNonQuery();
+                        }
+                    }
+
+                    // Update data for year levels if textboxes have value
+                    if (!string.IsNullOrWhiteSpace(textBoxLVL.Text) && !string.IsNullOrWhiteSpace(textBoxLVLID.Text))
+                    {
+                        string yearLevelUpdateQuery = "UPDATE yearlevels SET YearLevel = @YearLevel WHERE YearLevelID = @YearLevelID";
+                        using (SQLiteCommand yearLevelCommand = new SQLiteCommand(yearLevelUpdateQuery, connection))
+                        {
+                            yearLevelCommand.Parameters.AddWithValue("@YearLevel", textBoxLVL.Text);
+                            yearLevelCommand.Parameters.AddWithValue("@YearLevelID", textBoxLVLID.Text);
+                            yearLevelCommand.ExecuteNonQuery();
+                        }
+                    }
+
+
 
                     MessageBox.Show("Data updated successfully!");
 
