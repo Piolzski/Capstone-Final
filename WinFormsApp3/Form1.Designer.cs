@@ -72,7 +72,6 @@
             checklistboxExclude = new CheckedListBox();
             panel5 = new Panel();
             label17 = new Label();
-            button5 = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -511,7 +510,6 @@
             panel2.AllowDrop = true;
             panel2.BackColor = Color.Ivory;
             panel2.BorderStyle = BorderStyle.Fixed3D;
-            panel2.Controls.Add(button5);
             panel2.Controls.Add(button6);
             panel2.Controls.Add(lstDepartments);
             panel2.Controls.Add(label4);
@@ -602,20 +600,6 @@
             label17.Text = "Week Excluder";
             label17.Click += label17_Click;
             // 
-            // button5
-            // 
-            button5.BackColor = Color.DarkOrange;
-            button5.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button5.ForeColor = Color.White;
-            button5.Location = new Point(1082, 62);
-            button5.Margin = new Padding(3, 4, 3, 4);
-            button5.Name = "button5";
-            button5.Size = new Size(217, 64);
-            button5.TabIndex = 27;
-            button5.Text = "Clear Excel Week";
-            button5.UseVisualStyleBackColor = false;
-            button5.Click += button5_Click_1;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -691,6 +675,5 @@
         private Label label18;
         private TextBox textBoxSpecifiedWeeks;
         private Button button9;
-        private Button button5;
     }
 }
