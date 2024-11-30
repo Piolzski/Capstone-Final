@@ -29,13 +29,10 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataGenerator));
-            textBox1 = new TextBox();
-            label10 = new Label();
             button4 = new Button();
             TextBoxDept = new TextBox();
             button3 = new Button();
             button1 = new Button();
-            label7 = new Label();
             textBoxTime = new TextBox();
             textBoxSpec = new TextBox();
             textBoxName = new TextBox();
@@ -43,8 +40,6 @@
             label2 = new Label();
             pictureBox1 = new PictureBox();
             label1 = new Label();
-            textBoxHos = new TextBox();
-            label11 = new Label();
             label5 = new Label();
             label4 = new Label();
             label8 = new Label();
@@ -62,7 +57,6 @@
             textBoxTextColor = new TextBox();
             panel1 = new Panel();
             dataGridView1 = new DataGridView();
-            panel3 = new Panel();
             panel5 = new Panel();
             panel4 = new Panel();
             panel6 = new Panel();
@@ -70,32 +64,10 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
-            panel3.SuspendLayout();
             panel5.SuspendLayout();
             panel4.SuspendLayout();
             panel6.SuspendLayout();
             SuspendLayout();
-            // 
-            // textBox1
-            // 
-            textBox1.Location = new Point(266, 82);
-            textBox1.Margin = new Padding(3, 4, 3, 4);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(205, 27);
-            textBox1.TabIndex = 23;
-            textBox1.TextChanged += textBox1_TextChanged;
-            // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.BackColor = Color.Transparent;
-            label10.Font = new Font("Arial Black", 12F, FontStyle.Bold);
-            label10.ForeColor = Color.Chocolate;
-            label10.Location = new Point(82, 87);
-            label10.Name = "label10";
-            label10.Size = new Size(141, 28);
-            label10.TabIndex = 22;
-            label10.Text = "Hospital ID:";
             // 
             // button4
             // 
@@ -147,19 +119,6 @@
             button1.Text = "ADD";
             button1.UseVisualStyleBackColor = false;
             button1.Click += button1_Click;
-            // 
-            // label7
-            // 
-            label7.AutoSize = true;
-            label7.BackColor = Color.Transparent;
-            label7.Font = new Font("Arial Black", 12F, FontStyle.Bold);
-            label7.ForeColor = Color.Chocolate;
-            label7.Location = new Point(82, 131);
-            label7.Name = "label7";
-            label7.Size = new Size(180, 28);
-            label7.TabIndex = 11;
-            label7.Text = "Hospital Name:";
-            label7.Click += label7_Click;
             // 
             // textBoxTime
             // 
@@ -240,27 +199,6 @@
             label1.TabIndex = 0;
             label1.Text = "Name:";
             label1.Click += label1_Click;
-            // 
-            // textBoxHos
-            // 
-            textBoxHos.Location = new Point(266, 127);
-            textBoxHos.Margin = new Padding(3, 4, 3, 4);
-            textBoxHos.Name = "textBoxHos";
-            textBoxHos.Size = new Size(205, 27);
-            textBoxHos.TabIndex = 12;
-            // 
-            // label11
-            // 
-            label11.AutoSize = true;
-            label11.BackColor = Color.Transparent;
-            label11.Font = new Font("Arial Black", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label11.ForeColor = Color.Black;
-            label11.Location = new Point(214, 23);
-            label11.Name = "label11";
-            label11.Size = new Size(125, 33);
-            label11.TabIndex = 24;
-            label11.Text = "Hospital";
-            label11.Click += label11_Click;
             // 
             // label5
             // 
@@ -460,22 +398,6 @@
             dataGridView1.Size = new Size(702, 430);
             dataGridView1.TabIndex = 48;
             // 
-            // panel3
-            // 
-            panel3.BackColor = Color.Ivory;
-            panel3.BorderStyle = BorderStyle.Fixed3D;
-            panel3.Controls.Add(label11);
-            panel3.Controls.Add(label10);
-            panel3.Controls.Add(label7);
-            panel3.Controls.Add(textBox1);
-            panel3.Controls.Add(textBoxHos);
-            panel3.Location = new Point(445, 565);
-            panel3.Margin = new Padding(3, 4, 3, 4);
-            panel3.Name = "panel3";
-            panel3.Size = new Size(549, 202);
-            panel3.TabIndex = 43;
-            panel3.Paint += panel3_Paint;
-            // 
             // panel5
             // 
             panel5.BackColor = Color.Ivory;
@@ -485,10 +407,10 @@
             panel5.Controls.Add(textBoxLVL);
             panel5.Controls.Add(label13);
             panel5.Controls.Add(label12);
-            panel5.Location = new Point(1028, 565);
+            panel5.Location = new Point(445, 571);
             panel5.Margin = new Padding(3, 4, 3, 4);
             panel5.Name = "panel5";
-            panel5.Size = new Size(702, 202);
+            panel5.Size = new Size(549, 202);
             panel5.TabIndex = 45;
             panel5.Paint += panel5_Paint;
             // 
@@ -537,7 +459,6 @@
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1920, 1080);
             Controls.Add(panel6);
-            Controls.Add(panel3);
             Controls.Add(dataGridView1);
             Controls.Add(panel2);
             Controls.Add(panel4);
@@ -554,8 +475,6 @@
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
-            panel3.ResumeLayout(false);
-            panel3.PerformLayout();
             panel5.ResumeLayout(false);
             panel5.PerformLayout();
             panel4.ResumeLayout(false);
@@ -570,17 +489,12 @@
         private Label label3;
         private Label label2;
         private TextBox textBoxTime;
-        private Label label7;
         private Button button1;
         private PictureBox pictureBox1;
         private Button button3;
         private TextBox TextBoxDept;
         private Button button4;
-        private TextBox textBox1;
-        private Label label10;
         private Label label1;
-        private TextBox textBoxHos;
-        private Label label11;
         private Label label5;
         private Label label4;
         private Label label8;
@@ -597,7 +511,6 @@
         private Label label18;
         private TextBox textBoxTextColor;
         private Panel panel1;
-        private Panel panel3;
         private Panel panel5;
         private Panel panel4;
         private Panel panel6;

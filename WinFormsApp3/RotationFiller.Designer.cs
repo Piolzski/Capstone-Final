@@ -1,6 +1,6 @@
 ﻿namespace WinFormsApp3
 {
-    partial class Form1
+    partial class RotationFiller
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RotationFiller));
             label1 = new Label();
             label2 = new Label();
             label3 = new Label();
@@ -552,12 +552,12 @@
             label14.AutoSize = true;
             label14.BorderStyle = BorderStyle.FixedSingle;
             label14.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label14.Location = new Point(668, 129);
+            label14.Location = new Point(584, 128);
             label14.Name = "label14";
             label14.RightToLeft = RightToLeft.No;
-            label14.Size = new Size(222, 30);
+            label14.Size = new Size(379, 30);
             label14.TabIndex = 38;
-            label14.Text = "16 hour shift in week:";
+            label14.Text = "16 hour shift in week/Specified Weeks";
             // 
             // checklistboxExclude
             // 
@@ -600,7 +600,7 @@
             label17.Text = "Week Excluder";
             label17.Click += label17_Click;
             // 
-            // Form1
+            // RotationFiller
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -613,7 +613,7 @@
             Controls.Add(panel4);
             Controls.Add(panel5);
             Margin = new Padding(3, 4, 3, 4);
-            Name = "Form1";
+            Name = "RotationFiller";
             Text = "Form1";
             Load += Form1_Load;
             panel1.ResumeLayout(false);

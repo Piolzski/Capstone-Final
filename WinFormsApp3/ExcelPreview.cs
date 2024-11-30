@@ -105,7 +105,7 @@ namespace WinFormsApp3
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             // Instantiate Form1
-            Form1 form1 = new Form1();
+            RotationFiller form1 = new RotationFiller();
 
             // Show Form1
             form1.Show();

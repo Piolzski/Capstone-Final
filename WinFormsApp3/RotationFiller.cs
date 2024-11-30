@@ -14,9 +14,9 @@ using System.Data.SQLite;
 
 namespace WinFormsApp3
 {
-    public partial class Form1 : Form
+    public partial class RotationFiller : Form
     {
-        public Form1()
+        public RotationFiller()
         {
             InitializeComponent();
         }

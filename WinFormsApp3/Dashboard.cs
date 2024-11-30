@@ -111,11 +111,11 @@ namespace WinFormsApp3
             this.Hide();
 
             // Instantiate the  form
-            Form1 Form1 = new Form1();
+            RotationFiller Form1 = new RotationFiller();
 
             // Show the Rotation Filler form
             Form1.Show();
-            //added one C.I color to be assessed tommorrow ang uban 
+            
         }
 
         private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
