@@ -593,18 +593,20 @@ namespace WinFormsApp3
                     }
 
                     // Define starting rows and map year levels to integer values
-                    Dictionary<string, (int StartRow, int YearInt)> yearLevelStartRows = new Dictionary<string, (int, int)>(StringComparer.OrdinalIgnoreCase) {
-            { "2nd year", (6, 2) },  // Start row and integer mapping for 2nd Year
-            { "3rd year", (22, 3) },  // Start row and integer mapping for 3rd Year
-            { "4th year", (38, 4) }   // Start row and integer mapping for 4th Year
-        };
+                    Dictionary<string, (int StartRow, int YearInt)> yearLevelStartRows = new Dictionary<string, (int, int)>(StringComparer.OrdinalIgnoreCase) 
+                    {
+                        { "2nd year", (6, 2) },  // Start row and integer mapping for 2nd Year
+                        { "3rd year", (22, 3) },  // Start row and integer mapping for 3rd Year
+                        { "4th year", (38, 4) }   // Start row and integer mapping for 4th Year
+                    };
 
                     // Define the base columns for each timeshift
-                    Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
-            { "7am to 3pm", 2 },   // Base column for 7am to 3pm
-            { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
-            { "11pm to 7am", 4 }   // Base column for 11pm to 7am
-        };
+                    Dictionary<string, int> baseTimeshiftColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) 
+                    {
+                        { "7am to 3pm", 2 },   // Base column for 7am to 3pm
+                        { "3pm to 11pm", 3 },  // Base column for 3pm to 11pm
+                        { "11pm to 7am", 4 }   // Base column for 11pm to 7am
+                    };
 
                     // Retrieve the selected year levels
                     var selectedYearLevels = lstYearLevels.SelectedItems.Cast<string>().Select(s => s.Trim().ToLowerInvariant()).ToArray();
@@ -613,6 +615,50 @@ namespace WinFormsApp3
                         MessageBox.Show("No year levels selected.");
                         return;
                     }
+
+                    // Map year levels to their respective group textboxes dynamically
+                    var yearLevelToTextboxMap = new Dictionary<string, TextBox>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "2nd year", groupbox2 },
+                        { "3rd year", groupbox3 },
+                        { "4th year", groupbox4 }
+                    };
+
+                    // Validate group entries dynamically based on selected year levels
+                    foreach (var kvp in yearLevelToTextboxMap)
+                    {
+                        string yearLevel = kvp.Key;         // Year level (e.g., "2nd year")
+                        TextBox textbox = kvp.Value;       // Corresponding textbox
+                        int groupCount = int.TryParse(textbox.Text, out int groupValue) ? groupValue : 0;
+
+                        if (selectedYearLevels.Contains(yearLevel.ToLowerInvariant()))
+                        {
+                            // If the year level is selected, ensure a valid group count is provided
+                            if (groupCount <= 0)
+                            {
+                                MessageBox.Show($"Error: Please enter a valid number of groups for {yearLevel}.",
+                                                "Validation Error",
+                                                MessageBoxButtons.OK,
+                                                MessageBoxIcon.Warning);
+                                ClearSelectionsOnInvalidInput(); // Clear all selections
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            // If the year level is not selected, ensure the textbox is empty or 0
+                            if (groupCount > 0)
+                            {
+                                MessageBox.Show($"Error: Groups entered for {yearLevel}, but it is not selected. Please restart your input.",
+                                                "Validation Error",
+                                                MessageBoxButtons.OK,
+                                                MessageBoxIcon.Warning);
+                                ClearSelectionsOnInvalidInput(); // Clear all selections
+                                return;
+                            }
+                        }
+                    }
+
 
                     // Retrieve selected timeshifts
                     var selectedTimeshifts = lstTimeShifts.SelectedItems.Cast<string>().Select(s => s.Trim()).ToArray();
@@ -1168,6 +1214,33 @@ namespace WinFormsApp3
 
 
 
+
+        }
+
+        private void ClearSelectionsOnInvalidInput()
+        {
+            // Clear timeshift selection
+            lstTimeShifts.ClearSelected();
+
+            // Clear year level selection
+            lstYearLevels.ClearSelected();
+
+            // Clear department/area selection
+            lstDepartments.ClearSelected();
+
+            // Clear Clinical Instructor selection
+            lstClinicalInstructors.ClearSelected();
+
+            // Clear number of rotations
+            textBox1.Clear();
+
+            // Clear 16-hour shift input
+            textBox16hrs.Clear();
+
+            // Clear groups in textboxes
+            groupbox2.Text = string.Empty;
+            groupbox3.Text = string.Empty;
+            groupbox4.Text = string.Empty;
 
         }
 
