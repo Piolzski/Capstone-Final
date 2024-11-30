@@ -114,7 +114,7 @@ namespace WinFormsApp3
         {
 
             string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;";
-            string query = "SELECT DepartmentName FROM hospitaldepartments"; // Correctly targeting the DepartmentName column
+            string query = "SELECT AreaName FROM hospitaldepartments"; // Correctly targeting the DepartmentName column
 
             try
             {
@@ -130,7 +130,7 @@ namespace WinFormsApp3
                             while (reader.Read())
                             {
                                 // Fetch the DepartmentName value from the reader
-                                string departmentName = reader["DepartmentName"]?.ToString() ?? string.Empty;
+                                string departmentName = reader["AreaName"]?.ToString() ?? string.Empty;
 
                                 if (!string.IsNullOrEmpty(departmentName)) // Only add non-empty department names
                                 {
@@ -143,7 +143,7 @@ namespace WinFormsApp3
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while loading departments: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occurred while loading Areas: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
@@ -695,11 +695,44 @@ namespace WinFormsApp3
                     // Global tracking dictionary to avoid conflicts across C.I.s
                     var globalGroupAssignments = new Dictionary<(int yearLevel, string timeshift, int week), HashSet<int>>();
                     var globalUsedGroups = new HashSet<int>(); // Track globally used groups
+                    var yearLevelUsedGroups = new Dictionary<int, HashSet<int>>(); // Track used groups per year level
+
 
                     // Retrieve weeks to exclude from the week excluder checklistbox
                     var excludedWeeks = new HashSet<int>(
                         checklistboxExclude.CheckedItems.Cast<string>().Select(int.Parse)
                     );
+
+                    int CalculateTotalAllocatedWeeks(IXLWorksheet worksheet, Dictionary<string, int> baseTimeshiftColumns)
+                    {
+                        int maxWeek = 0;
+
+                        foreach (var timeshift in baseTimeshiftColumns.Keys)
+                        {
+                            // Get the base column for this timeshift
+                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
+
+                            int lastUsedColumn = 0;
+
+                            // Loop through columns to find the last column with data
+                            for (int col = timeshiftColumn; col <= worksheet.ColumnsUsed().Count(); col++)
+                            {
+                                if (worksheet.Column(col).CellsUsed().Any()) // Check if any cell in this column has data
+                                {
+                                    lastUsedColumn = col; // Update the last used column
+                                }
+                            }
+
+                            // Calculate the number of weeks based on the last used column
+                            if (lastUsedColumn >= timeshiftColumn)
+                            {
+                                int weeksForThisTimeshift = (lastUsedColumn - timeshiftColumn) / 3 + 1; // Each week spans 3 columns
+                                maxWeek = Math.Max(maxWeek, weeksForThisTimeshift); // Update the maximum week count
+                            }
+                        }
+
+                        return maxWeek;
+                    }
 
                     // Track the assigned weeks for each combination of year level (as an integer) and timeshift
                     var assignedWeeks = new Dictionary<(int yearLevel, string timeshift), HashSet<int>>();
@@ -707,16 +740,25 @@ namespace WinFormsApp3
                     foreach (var yearLevel in selectedYearLevels)
                     {
                         var yearLevelInt = yearLevelStartRows[yearLevel].YearInt; // Get the integer representation of the year level
+                        yearLevelUsedGroups[yearLevelInt] = new HashSet<int>(); // Initialize tracking for each year level
 
                         foreach (var timeshift in selectedTimeshifts)
                         {
                             assignedWeeks[(yearLevelInt, timeshift)] = new HashSet<int>();
                         }
                     }
-
                     // Function to get the next available group for assignment
-                    int GetNextAvailableGroup(List<int> groupsPool, HashSet<int> localUsedGroups, HashSet<int> globalUsedGroups)
+                    int GetNextAvailableGroup(List<int> groupsPool, HashSet<int> localUsedGroups, HashSet<int> globalUsedGroups, int yearLevel)
                     {
+                        // Prioritize groups not yet used in the current year level
+                        var unusedInYearLevel = groupsPool.Where(group => !yearLevelUsedGroups[yearLevel].Contains(group)).ToList();
+
+                        if (unusedInYearLevel.Any())
+                        {
+                            // Randomly pick from the unused groups within the year level
+                            return unusedInYearLevel[new Random().Next(unusedInYearLevel.Count)];
+                        }
+
                         // Prioritize groups not yet assigned globally
                         var unusedGlobally = groupsPool.Where(group => !globalUsedGroups.Contains(group)).ToList();
 
@@ -802,7 +844,8 @@ namespace WinFormsApp3
 
                                     int groupToAssign = GetNextAvailableGroup(groupsForRotationCycle,
                                                                               globalGroupAssignments[(yearLevelInt, timeshift, week)],
-                                                                              globalUsedGroups);
+                                                                              globalUsedGroups,
+                                                                              yearLevelInt);
 
                                     groupsForRotationCycle.Remove(groupToAssign);
 
@@ -824,6 +867,7 @@ namespace WinFormsApp3
                                         assignedWeeks[(yearLevelInt, timeshift)].Add(week);
                                         globalGroupAssignments[(yearLevelInt, timeshift, week)].Add(groupToAssign);
                                         globalUsedGroups.Add(groupToAssign);
+                                        yearLevelUsedGroups[yearLevelInt].Add(groupToAssign); // Track usage in the current year level
 
                                         currentRotation++;
                                         rotationAssigned = true;
@@ -843,43 +887,10 @@ namespace WinFormsApp3
                         }
                     }
 
-                    int CalculateTotalAllocatedWeeks(IXLWorksheet worksheet, Dictionary<string, int> baseTimeshiftColumns)
-                    {
-                        int maxWeek = 0;
-
-                        foreach (var timeshift in baseTimeshiftColumns.Keys)
-                        {
-                            // Get the base column for this timeshift
-                            int timeshiftColumn = baseTimeshiftColumns[timeshift];
-
-                            int lastUsedColumn = 0;
-
-                            // Loop through columns to find the last column with data
-                            for (int col = timeshiftColumn; col <= worksheet.ColumnsUsed().Count(); col++)
-                            {
-                                if (worksheet.Column(col).CellsUsed().Any()) // Check if any cell in this column has data
-                                {
-                                    lastUsedColumn = col; // Update the last used column
-                                }
-                            }
-
-                            // Calculate the number of weeks based on the last used column
-                            if (lastUsedColumn >= timeshiftColumn)
-                            {
-                                int weeksForThisTimeshift = (lastUsedColumn - timeshiftColumn) / 3 + 1; // Each week spans 3 columns
-                                maxWeek = Math.Max(maxWeek, weeksForThisTimeshift); // Update the maximum week count
-                            }
-                        }
-
-                        return maxWeek;
-                    }
-
-
-                    // Process the 16-hour shift independently if a valid week is specified
+                    // Ensure 16-hour shift groups follow the same enhancements
                     if (is16HourShiftValid)
                     {
-                        // Determine the target column based on the timeshift selection
-                        int targetColumnFor16hrShift = baseTimeshiftColumns[selectedTimeshifts[0]]; // Use the first selected timeshift directly
+                        int targetColumnFor16hrShift = baseTimeshiftColumns[selectedTimeshifts[0]];
 
                         int weekOffsetFor16hrShift = (weekFor16HourShift - 1) * 3;
                         int finalColumnFor16hrShift = targetColumnFor16hrShift + weekOffsetFor16hrShift;
@@ -895,25 +906,22 @@ namespace WinFormsApp3
 
                             int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
 
-                            // Randomly select one group to assign for the 16-hour shift
                             int groupToAssign = GetNextAvailableGroup(
                                 allGroups,
                                 globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)],
-                                globalUsedGroups
+                                globalUsedGroups,
+                                yearLevelInt
                             );
 
-                            // Check if the group has already been assigned globally for this 16-hour shift
                             if (globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)].Contains(groupToAssign))
                             {
-                                continue; // Skip if the group is already assigned in this 16-hour shift
+                                continue;
                             }
 
-                            allGroups.Remove(groupToAssign); // Remove selected group from the pool
+                            allGroups.Remove(groupToAssign);
 
-                            int actualGroupNumber;
-                            if (groupToAssign > 200) actualGroupNumber = groupToAssign - 200;
-                            else if (groupToAssign > 100) actualGroupNumber = groupToAssign - 100;
-                            else actualGroupNumber = groupToAssign;
+                            int actualGroupNumber = groupToAssign > 200 ? groupToAssign - 200 :
+                                                    groupToAssign > 100 ? groupToAssign - 100 : groupToAssign;
 
                             int targetRow = startingRowForYearLevel + actualGroupNumber - 1;
 
@@ -925,13 +933,11 @@ namespace WinFormsApp3
                                 worksheet.Cell(targetRow, finalColumnFor16hrShift).Value = areaToAssign;
                                 worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
                                 worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Fill.SetBackgroundColor(backgroundColor);
-                                worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Font.FontColor = fontColor; // Font color for 16-hour shift
+                                worksheet.Cell(targetRow, finalColumnFor16hrShift).Style.Font.FontColor = fontColor;
 
-                                // Mark this group as assigned globally for the 16-hour shift
                                 globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)].Add(groupToAssign);
-
-                                // Track the group globally
                                 globalUsedGroups.Add(groupToAssign);
+                                yearLevelUsedGroups[yearLevelInt].Add(groupToAssign); // Track usage in the current year level
                             }
                         }
                     }

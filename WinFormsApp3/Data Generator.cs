@@ -31,6 +31,7 @@ namespace WinFormsApp3
 
             // Load the clinical instructors into the DataGridView
             LoadInstructors();
+            LoadDepartments();
         }
 
 
@@ -126,8 +127,8 @@ namespace WinFormsApp3
                     }
 
 
-                // Insert data for time shifts if textbox has value
-                if (!string.IsNullOrWhiteSpace(textBoxTime.Text))
+                    // Insert data for time shifts if textbox has value
+                    if (!string.IsNullOrWhiteSpace(textBoxTime.Text))
                     {
                         string timeshiftInsertQuery = "INSERT INTO timeshifts (TimeShiftName) VALUES (@Time)";
                         using (SQLiteCommand timeshiftCommand = new SQLiteCommand(timeshiftInsertQuery, connection))
@@ -142,10 +143,10 @@ namespace WinFormsApp3
                     // Insert data for hospital departments if TextBoxDept has value
                     if (!string.IsNullOrWhiteSpace(TextBoxDept.Text))
                     {
-                        string departmentInsertQuery = "INSERT INTO hospitaldepartments (DepartmentName) VALUES (@DepartmentName)";
+                        string departmentInsertQuery = "INSERT INTO hospitaldepartments (AreaName) VALUES (@AreaName)";
                         using (SQLiteCommand departmentCommand = new SQLiteCommand(departmentInsertQuery, connection))
                         {
-                            departmentCommand.Parameters.AddWithValue("@DepartmentName", TextBoxDept.Text);
+                            departmentCommand.Parameters.AddWithValue("@AreaName", TextBoxDept.Text);
                             departmentCommand.ExecuteNonQuery();
                         }
                     }
@@ -173,15 +174,15 @@ namespace WinFormsApp3
                         }
                     }
 
-                    MessageBox.Show("Data inserted successfully!");
+                    MessageBox.Show("Data Inserted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // Clear text boxes
                     textBoxName.Clear();
                     textBoxSpec.Clear();
                     textBoxTime.Clear();
-                  
+
                     TextBoxDept.Clear();
-                   
+
                     textBoxLVL.Clear();
                     textBoxLVLID.Clear();
                     textBoxgrp.Clear();
@@ -210,7 +211,7 @@ namespace WinFormsApp3
             if (string.IsNullOrWhiteSpace(textBoxName.Text) &&
                 string.IsNullOrWhiteSpace(textBoxSpec.Text) &&
                 string.IsNullOrWhiteSpace(textBoxTime.Text) &&
-              
+
                 string.IsNullOrWhiteSpace(TextBoxDept.Text) &&
                 string.IsNullOrWhiteSpace(textBoxID.Text)) // Add check for textBoxID
             {
@@ -289,26 +290,35 @@ namespace WinFormsApp3
                     }
 
 
-                    // Delete data for hospital departments if textbox has value
-                    if (!string.IsNullOrWhiteSpace(TextBoxDept.Text))
+                   
+                    if (!string.IsNullOrWhiteSpace(textBoxAreaID.Text))
                     {
-                        string checkDepartmentQuery = "SELECT COUNT(*) FROM hospitaldepartments WHERE DepartmentName = @Department";
-                        using (SQLiteCommand checkCommand = new SQLiteCommand(checkDepartmentQuery, connection))
+                        string checkAreaQuery = "SELECT COUNT(*) FROM hospitaldepartments WHERE DepartmentID = @AreaID";
+                        using (SQLiteCommand checkCommand = new SQLiteCommand(checkAreaQuery, connection))
                         {
-                            checkCommand.Parameters.AddWithValue("@Department", TextBoxDept.Text);
+                            checkCommand.Parameters.AddWithValue("@AreaID", textBoxAreaID.Text);
                             int count = Convert.ToInt32(checkCommand.ExecuteScalar());
                             if (count > 0)
                             {
-                                string departmentDeleteQuery = "DELETE FROM hospitaldepartments WHERE DepartmentName = @Department";
-                                using (SQLiteCommand departmentCommand = new SQLiteCommand(departmentDeleteQuery, connection))
+                                string areaDeleteQuery = "DELETE FROM hospitaldepartments WHERE DepartmentID = @AreaID";
+                                using (SQLiteCommand areaCommand = new SQLiteCommand(areaDeleteQuery, connection))
                                 {
-                                    departmentCommand.Parameters.AddWithValue("@Department", TextBoxDept.Text);
-                                    departmentCommand.ExecuteNonQuery();
+                                    areaCommand.Parameters.AddWithValue("@AreaID", textBoxAreaID.Text);
+                                    areaCommand.ExecuteNonQuery();
                                     dataFoundToDelete = true;
                                 }
                             }
+                            else
+                            {
+                                MessageBox.Show("No record found with the provided AreaID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
                         }
                     }
+                    else
+                    {
+                        MessageBox.Show("Area ID is required to delete a record.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+
 
 
                     // Delete data for group numbers if textbox has value
@@ -340,7 +350,8 @@ namespace WinFormsApp3
                     }
                     else
                     {
-                        MessageBox.Show("Data deleted successfully!");
+                        MessageBox.Show("Data Deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                     }
 
                     // Clear text boxes
@@ -349,7 +360,7 @@ namespace WinFormsApp3
                     textBoxTime.Clear();
                     TextBoxDept.Clear();
                     textBoxID.Clear();
-            
+
                 }
             }
             catch (Exception ex)
@@ -434,14 +445,16 @@ namespace WinFormsApp3
                         }
                     }
 
-                    // Update all hospital departments if textbox has value
-                    if (!string.IsNullOrWhiteSpace(TextBoxDept.Text))
+                    // Update a specific hospital area if both AreaID and AreaName are provided
+                    if (!string.IsNullOrWhiteSpace(textBoxAreaID.Text) && !string.IsNullOrWhiteSpace(TextBoxDept.Text))
                     {
-                        string departmentUpdateQuery = "UPDATE hospitaldepartments SET DepartmentName = @Department";
-                        using (SQLiteCommand departmentCommand = new SQLiteCommand(departmentUpdateQuery, connection))
+                        string areaUpdateQuery = "UPDATE hospitaldepartments SET AreaName = @AreaName WHERE AreaID = @AreaID";
+                        using (SQLiteCommand areaCommand = new SQLiteCommand(areaUpdateQuery, connection))
                         {
-                            departmentCommand.Parameters.AddWithValue("@Department", TextBoxDept.Text);
-                            departmentCommand.ExecuteNonQuery();
+                            areaCommand.Parameters.AddWithValue("@AreaName", TextBoxDept.Text); // New area name
+                            areaCommand.Parameters.AddWithValue("@AreaID", textBoxAreaID.Text); // Specific ID to update
+
+                            int rowsAffected = areaCommand.ExecuteNonQuery();
                         }
                     }
 
@@ -473,16 +486,16 @@ namespace WinFormsApp3
 
 
 
-                    MessageBox.Show("Data updated successfully!");
+                    MessageBox.Show("Data updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // Clear text boxes
                     textBoxName.Clear();
                     textBoxSpec.Clear();
                     textBoxTime.Clear();
-                   
+
                     TextBoxDept.Clear();
                     textBoxID.Clear();
-                 
+
                 }
             }
             catch (Exception ex)
@@ -596,6 +609,50 @@ namespace WinFormsApp3
         {
 
         }
+
+        private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void LoadDepartments()
+        {
+            string connectionString = @"Data Source=clinicalrotationplanner.db;Version=3;"; // SQLite connection string
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "SELECT AreaID, AreaName FROM hospitaldepartments";
+                using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
+                {
+                    using (SQLiteDataReader reader = cmd.ExecuteReader())
+                    {
+                        // Ensure columns are defined before adding rows
+                        if (dataGridView2.Columns.Count == 0)
+                        {
+                            dataGridView2.Columns.Add("AreaID", "AreaID");
+                            dataGridView2.Columns.Add("AreaName", "AreaName");
+                        }
+
+                        dataGridView2.Rows.Clear(); // Clear any existing rows in the DataGridView
+
+                        while (reader.Read())
+                        {
+                            // Add a new row to dataGridView2 with data from the reader
+                            dataGridView2.Rows.Add(
+                                reader["AreaID"].ToString(),
+                                reader["AreaName"].ToString()
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+
     }
 }
 

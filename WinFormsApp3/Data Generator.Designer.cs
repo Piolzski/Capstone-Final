@@ -61,12 +61,16 @@
             panel4 = new Panel();
             panel6 = new Panel();
             panel2 = new Panel();
+            dataGridView2 = new DataGridView();
+            label6 = new Label();
+            textBoxAreaID = new TextBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             panel5.SuspendLayout();
             panel4.SuspendLayout();
             panel6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             SuspendLayout();
             // 
             // button4
@@ -86,7 +90,7 @@
             // TextBoxDept
             // 
             TextBoxDept.BackColor = SystemColors.Window;
-            TextBoxDept.Location = new Point(504, 125);
+            TextBoxDept.Location = new Point(504, 177);
             TextBoxDept.Margin = new Padding(3, 4, 3, 4);
             TextBoxDept.Name = "TextBoxDept";
             TextBoxDept.Size = new Size(238, 27);
@@ -218,7 +222,7 @@
             label4.BackColor = Color.Transparent;
             label4.Font = new Font("Arial Black", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.Black;
-            label4.Location = new Point(581, 67);
+            label4.Location = new Point(581, 119);
             label4.Name = "label4";
             label4.Size = new Size(77, 33);
             label4.TabIndex = 26;
@@ -431,6 +435,8 @@
             // 
             panel6.BackColor = Color.Ivory;
             panel6.BorderStyle = BorderStyle.Fixed3D;
+            panel6.Controls.Add(textBoxAreaID);
+            panel6.Controls.Add(label6);
             panel6.Controls.Add(label15);
             panel6.Controls.Add(textBoxgrp);
             panel6.Controls.Add(label4);
@@ -450,6 +456,37 @@
             panel2.Size = new Size(1921, 40);
             panel2.TabIndex = 48;
             // 
+            // dataGridView2
+            // 
+            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView2.Location = new Point(1028, 571);
+            dataGridView2.Name = "dataGridView2";
+            dataGridView2.RowHeadersWidth = 51;
+            dataGridView2.Size = new Size(702, 188);
+            dataGridView2.TabIndex = 49;
+            dataGridView2.CellContentClick += dataGridView2_CellContentClick;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.BackColor = Color.Transparent;
+            label6.Font = new Font("Arial Black", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label6.ForeColor = Color.Black;
+            label6.Location = new Point(581, 30);
+            label6.Name = "label6";
+            label6.Size = new Size(105, 33);
+            label6.TabIndex = 37;
+            label6.Text = "AreaID";
+            // 
+            // textBoxAreaID
+            // 
+            textBoxAreaID.BackColor = SystemColors.Window;
+            textBoxAreaID.Location = new Point(504, 67);
+            textBoxAreaID.Margin = new Padding(3, 4, 3, 4);
+            textBoxAreaID.Name = "textBoxAreaID";
+            textBoxAreaID.Size = new Size(238, 27);
+            textBoxAreaID.TabIndex = 38;
+            // 
             // DataGenerator
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -458,6 +495,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1920, 1080);
+            Controls.Add(dataGridView2);
             Controls.Add(panel6);
             Controls.Add(dataGridView1);
             Controls.Add(panel2);
@@ -480,6 +518,7 @@
             panel4.ResumeLayout(false);
             panel6.ResumeLayout(false);
             panel6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ResumeLayout(false);
         }
 
@@ -516,5 +555,8 @@
         private Panel panel6;
         private DataGridView dataGridView1;
         private Panel panel2;
+        private DataGridView dataGridView2;
+        private TextBox textBoxAreaID;
+        private Label label6;
     }
 }
