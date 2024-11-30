@@ -346,7 +346,7 @@
             // 
             // groupbox2
             // 
-            groupbox2.Location = new Point(754, 149);
+            groupbox2.Location = new Point(465, 149);
             groupbox2.Margin = new Padding(3, 4, 3, 4);
             groupbox2.Name = "groupbox2";
             groupbox2.Size = new Size(164, 25);
@@ -354,7 +354,7 @@
             // 
             // groupbox3
             // 
-            groupbox3.Location = new Point(471, 149);
+            groupbox3.Location = new Point(766, 149);
             groupbox3.Margin = new Padding(3, 4, 3, 4);
             groupbox3.Name = "groupbox3";
             groupbox3.Size = new Size(164, 25);

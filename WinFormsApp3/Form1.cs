@@ -692,10 +692,9 @@ namespace WinFormsApp3
                     // Use the modified function to get the last week for the selected C.I. based on both background and font colors
                     int lastWeekForCI = GetLastWeekForCIBasedOnColor(backgroundColor, fontColor);
 
-
                     // Global tracking dictionary to avoid conflicts across C.I.s
                     var globalGroupAssignments = new Dictionary<(int yearLevel, string timeshift, int week), HashSet<int>>();
-
+                    var globalUsedGroups = new HashSet<int>(); // Track globally used groups
 
                     // Retrieve weeks to exclude from the week excluder checklistbox
                     var excludedWeeks = new HashSet<int>(
@@ -705,7 +704,6 @@ namespace WinFormsApp3
                     // Track the assigned weeks for each combination of year level (as an integer) and timeshift
                     var assignedWeeks = new Dictionary<(int yearLevel, string timeshift), HashSet<int>>();
 
-                    // Initialize the tracking dictionary for all combinations of year levels and timeshifts
                     foreach (var yearLevel in selectedYearLevels)
                     {
                         var yearLevelInt = yearLevelStartRows[yearLevel].YearInt; // Get the integer representation of the year level
@@ -714,6 +712,30 @@ namespace WinFormsApp3
                         {
                             assignedWeeks[(yearLevelInt, timeshift)] = new HashSet<int>();
                         }
+                    }
+
+                    // Function to get the next available group for assignment
+                    int GetNextAvailableGroup(List<int> groupsPool, HashSet<int> localUsedGroups, HashSet<int> globalUsedGroups)
+                    {
+                        // Prioritize groups not yet assigned globally
+                        var unusedGlobally = groupsPool.Where(group => !globalUsedGroups.Contains(group)).ToList();
+
+                        if (unusedGlobally.Any())
+                        {
+                            // Randomly pick from the unused globally groups
+                            return unusedGlobally[new Random().Next(unusedGlobally.Count)];
+                        }
+
+                        // If all groups are used globally, prioritize groups not used locally
+                        var unusedLocally = groupsPool.Where(group => !localUsedGroups.Contains(group)).ToList();
+
+                        if (unusedLocally.Any())
+                        {
+                            return unusedLocally[new Random().Next(unusedLocally.Count)];
+                        }
+
+                        // If all groups are used both locally and globally, pick any group from the pool
+                        return groupsPool[new Random().Next(groupsPool.Count)];
                     }
 
                     // Find the first available week that's not excluded
@@ -726,46 +748,34 @@ namespace WinFormsApp3
                     // Insert the rotations if a valid number of rotations is provided
                     if (isRotationsValid)
                     {
-                        // Original logic to process rotations for Clinical Instructors
                         foreach (var timeshift in selectedTimeshifts)
                         {
-                            // Copy the list of all available groups
                             List<int> groupsForRotationCycle = new List<int>(allGroups);
 
-                            // Ensure the number of groups does not exceed the number of rotations
                             if (groupsForRotationCycle.Count > numberOfRotations)
                             {
-                                // Shuffle and take only the first 'numberOfRotations' groups
                                 groupsForRotationCycle = groupsForRotationCycle.OrderBy(g => random.Next()).Take(numberOfRotations).ToList();
                             }
 
-                            int currentRotation = 0; // Track current rotation count
-
-
-                            // Calculate the total weeks available in the worksheet
+                            int currentRotation = 0;
 
                             int totalWeeksAllocated = CalculateTotalAllocatedWeeks(worksheet, baseTimeshiftColumns);
 
-                            // Validate if the requested rotations exceed the available weeks
                             if (numberOfRotations > totalWeeksAllocated)
                             {
                                 MessageBox.Show($"Error: Only {totalWeeksAllocated} weeks are allocated in the schedule. " +
                                                 $"You have requested {numberOfRotations} rotations, which exceeds the limit.",
                                                 "Week Limit Exceeded", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return; // Stop deployment if the limit is exceeded
+                                return;
                             }
 
-
-
-                            // Start the week count at the determined starting week
                             int week = startingWeek;
                             while (currentRotation < numberOfRotations)
                             {
-                                // Skip the weeks that are marked as excluded or if the week has already been assigned for this combination
                                 if (excludedWeeks.Contains(week) || assignedWeeks.Values.Any(weeks => weeks.Contains(week)))
                                 {
                                     week++;
-                                    continue; // Move to the next week if the current one is excluded or already assigned
+                                    continue;
                                 }
 
                                 int weekOffset = (week - 1) * 3;
@@ -776,15 +786,13 @@ namespace WinFormsApp3
 
                                 foreach (var yearLevel in selectedYearLevels)
                                 {
-                                    var yearLevelInt = yearLevelStartRows[yearLevel].YearInt; // Get the integer representation
+                                    var yearLevelInt = yearLevelStartRows[yearLevel].YearInt;
 
-                                    // Check if the current week has already been assigned for this year level and timeshift
                                     if (assignedWeeks[(yearLevelInt, timeshift)].Contains(week))
                                     {
-                                        continue; // Skip if this combination already has an assigned rotation in this week
+                                        continue;
                                     }
 
-                                    // Check the global dictionary to avoid conflicts across C.I.s
                                     if (!globalGroupAssignments.ContainsKey((yearLevelInt, timeshift, week)))
                                     {
                                         globalGroupAssignments[(yearLevelInt, timeshift, week)] = new HashSet<int>();
@@ -792,23 +800,14 @@ namespace WinFormsApp3
 
                                     int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
 
-                                    // Randomly select one group to assign for the week
-                                    int randomGroupIndex = random.Next(groupsForRotationCycle.Count);
-                                    int groupToAssign = groupsForRotationCycle[randomGroupIndex];
+                                    int groupToAssign = GetNextAvailableGroup(groupsForRotationCycle,
+                                                                              globalGroupAssignments[(yearLevelInt, timeshift, week)],
+                                                                              globalUsedGroups);
 
-                                    // Check if the group has already been assigned globally
-                                    if (globalGroupAssignments[(yearLevelInt, timeshift, week)].Contains(groupToAssign))
-                                    {
-                                        continue; // Skip if the group is already assigned by another C.I. in the same week and timeshift
-                                    }
+                                    groupsForRotationCycle.Remove(groupToAssign);
 
-                                    // Assign the group
-                                    groupsForRotationCycle.RemoveAt(randomGroupIndex); // Remove selected group from the cycle
-
-                                    int actualGroupNumber;
-                                    if (groupToAssign > 200) actualGroupNumber = groupToAssign - 200;
-                                    else if (groupToAssign > 100) actualGroupNumber = groupToAssign - 100;
-                                    else actualGroupNumber = groupToAssign;
+                                    int actualGroupNumber = groupToAssign > 200 ? groupToAssign - 200 :
+                                                            groupToAssign > 100 ? groupToAssign - 100 : groupToAssign;
 
                                     int targetRow = startingRowForYearLevel + actualGroupNumber - 1;
 
@@ -817,22 +816,18 @@ namespace WinFormsApp3
                                         int randomAreaIndex = random.Next(selectedAreas.Length);
                                         string areaToAssign = selectedAreas[randomAreaIndex];
 
-                                        // Set cell value, background color, and font color
                                         worksheet.Cell(targetRow, targetColumn).Value = areaToAssign;
                                         worksheet.Cell(targetRow, targetColumn).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-                                        worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor); // Background color
-                                        worksheet.Cell(targetRow, targetColumn).Style.Font.FontColor = fontColor;               // Font color
+                                        worksheet.Cell(targetRow, targetColumn).Style.Fill.SetBackgroundColor(backgroundColor);
+                                        worksheet.Cell(targetRow, targetColumn).Style.Font.FontColor = fontColor;
 
-                                        // Mark this week as assigned for the current year level and timeshift
                                         assignedWeeks[(yearLevelInt, timeshift)].Add(week);
-
-                                        // Add the group to the global tracking dictionary
                                         globalGroupAssignments[(yearLevelInt, timeshift, week)].Add(groupToAssign);
+                                        globalUsedGroups.Add(groupToAssign);
 
-                                        // Increment rotation count and set the flag to indicate successful assignment
                                         currentRotation++;
                                         rotationAssigned = true;
-                                        break; // Move on to the next week once a rotation is assigned for this year level
+                                        break;
                                     }
                                     else
                                     {
@@ -842,7 +837,6 @@ namespace WinFormsApp3
 
                                 if (rotationAssigned)
                                 {
-                                    // Move to the next week after a successful assignment to avoid multiple rotations in the same week
                                     week++;
                                 }
                             }
@@ -902,8 +896,11 @@ namespace WinFormsApp3
                             int startingRowForYearLevel = yearLevelStartRows[yearLevel].StartRow;
 
                             // Randomly select one group to assign for the 16-hour shift
-                            int randomGroupIndex = random.Next(allGroups.Count);
-                            int groupToAssign = allGroups[randomGroupIndex];
+                            int groupToAssign = GetNextAvailableGroup(
+                                allGroups,
+                                globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)],
+                                globalUsedGroups
+                            );
 
                             // Check if the group has already been assigned globally for this 16-hour shift
                             if (globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)].Contains(groupToAssign))
@@ -911,7 +908,7 @@ namespace WinFormsApp3
                                 continue; // Skip if the group is already assigned in this 16-hour shift
                             }
 
-                            allGroups.RemoveAt(randomGroupIndex); // Remove selected group from the pool
+                            allGroups.Remove(groupToAssign); // Remove selected group from the pool
 
                             int actualGroupNumber;
                             if (groupToAssign > 200) actualGroupNumber = groupToAssign - 200;
@@ -932,9 +929,13 @@ namespace WinFormsApp3
 
                                 // Mark this group as assigned globally for the 16-hour shift
                                 globalGroupAssignments[(yearLevelInt, "16hr_shift", weekFor16HourShift)].Add(groupToAssign);
+
+                                // Track the group globally
+                                globalUsedGroups.Add(groupToAssign);
                             }
                         }
                     }
+
 
 
                     // Hardcoded offsets for each year level
